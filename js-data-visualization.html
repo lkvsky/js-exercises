@@ -1,8 +1,33 @@
 <html>
 	<head>
 		<meta charset="UTF-8">
-		<title>JS Data Visualization</title>
+		<title>Find a Farmers Market</title>
+		<script src="https://ajax.googleapis.com/ajax/libs/jquery/1.7.2/jquery.min.js"></script>
 	</head>
 	<body>
+		<table id="farmers-markets">
+			<thead>
+				<tr>
+					<th>Market</th>
+					<th>City</th>
+					<th>State</th>
+					<th>Website</th>
+				</tr>
+			</thead>
+			<tbody>
+			</tbody>
+		</table>
+		<script>
+		$.ajax({
+			url: "http://usda.iriscouch.com/farmers_markets/_design/geo/_spatiallist/geojson/full?bbox=-122.61248930742187,37.655669842383595,-122.24788054277343,37.83240550745524",
+			dataType: "jsonp",
+			success: function(json) {
+				var marketArr = json.features;
+				var i;
+				for (var i = 0; i < marketArr.length; i++) {
+				}
+			}
+		});
+		</script>
 	</body>
 </html>
