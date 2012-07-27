@@ -6,85 +6,47 @@
 		<script src="jquery.tablesorter.js"></script>
 		<style>
 		#map-canvas {
-			width: 90%;
-			height: 50%;
-			margin: auto;
+			width: 30%;
+			min-width: 250px;
+			height: 95%;
+			position: fixed;
+			top: 0%;
+		}
+		#market-table {
+			float: right;
+			width: 50%;
 		}
 		</style>
 	</head>
 	<body>
+		<div id="market-table">
+			<h1>Best Coast Eats Local</h1>
+			<label for="state-choice">Filter by state:</label>
+			<select name="state-choice" id="state-choice">
+				<option value="see-all">Choose a state</option>
+				<option value="California">California</option>
+				<option value="Oregon">Oregon</option>
+				<option value="Washington">Washington</option>
+			</select>
+			<table id="farmers-markets" class="tablesorter">
+				<thead>
+					<tr class="header">
+						<th>Market</th>
+						<th>City</th>
+						<th>State</th>
+					</tr>
+				</thead>
+				<tbody>
+				</tbody>
+			</table>
+		</div>
 		<div id="map-canvas">
 		</div>
-		<label for="state-choice">Filter by state:</label>
-		<select name="state-choice" id="state-choice">
-			<option value="see-all">Choose a state</option>
-			<option value="Alabama">Alabama</option>
-			<option value="Alaska">Alaska</option>
-			<option value="Arizona">Arizona</option>
-			<option value="Arkansas">Arkansas</option>
-			<option value="California">California</option>
-			<option value="Colorado">Colorado</option>
-			<option value="Connecticut">Connecticut</option>
-			<option value="Delaware">Delaware</option>
-			<option value="Florida">Florida</option>
-			<option value="Georgia">Georgia</option>
-			<option value="Hawaii">Hawaii</option>
-			<option value="Idaho">Idaho</option>
-			<option value="Illinois">Illinois</option>
-			<option value="Indiana">Indiana</option>
-			<option value="Iowa">Iowa</option>
-			<option value="Kansas">Kansas</option>
-			<option value="Kentucky">Kentucky</option>
-			<option value="Louisiana">Louisiana</option>
-			<option value="Maine">Maine</option>
-			<option value="Maryland">Maryland</option>
-			<option value="Massachusetts">Massachusetts</option>
-			<option value="Michigan">Michigan</option>
-			<option value="Minnesota">Minnesota</option>
-			<option value="Mississippi">Mississippi</option>
-			<option value="Missouri">Missouri</option>
-			<option value="Montana">Montana</option>
-			<option value="Nebraska">Nebraska</option>
-			<option value="Nevada">Nevada</option>
-			<option value="New Hampshire">New Hampshire</option>
-			<option value="New Jersey">New Mexico</option>
-			<option value="New York">New York</option>
-			<option value="North Carolina">North Carolina</option>
-			<option value="North Dakota">North Dakota</option>
-			<option value="Ohio">Ohio</option>
-			<option value="Oklahoma">Oklahoma</option>
-			<option value="Oregon">Oregon</option>
-			<option value="Pennsylvania">Pennsylvania</option>
-			<option value="Rhode Island">Rhode Island</option>
-			<option value="South Carolina">South Carolina</option>
-			<option value="South Dakota">South Dakota</option>
-			<option value="Tennessee">Tennessee</option>
-			<option value="Texas">Texas</option>
-			<option value="Utah">Utah</option>
-			<option value="Vermont">Vermont</option>
-			<option value="Virginia">Virginia</option>
-			<option value="Washington">Washington</option>
-			<option value="West Virginia">West Virginia</option>
-			<option value="Wisconsin">Wisconsin</option>
-			<option value="Wyoming">Wyoming</option>
-		</select>
-		<table id="farmers-markets" class="tablesorter">
-			<thead>
-				<tr class="header">
-					<th>Market</th>
-					<th>City</th>
-					<th>State</th>
-					<th>Website</th>
-				</tr>
-			</thead>
-			<tbody>
-			</tbody>
-		</table>
 		<script>
 		function initializeMap() {
 			var mapOptions = {
-				center: new google.maps.LatLng(40.580, -98.460),
-				zoom: 3,
+				center: new google.maps.LatLng(40.580, -119.400),
+				zoom: 5,
 				mapTypeId: google.maps.MapTypeId.ROADMAP
 			};
 			var map = new google.maps.Map(document.getElementById("map-canvas"), mapOptions);
@@ -99,29 +61,49 @@
 
 		window.onload = loadScript;
 
-		$.ajax({
-			url: "http://usda.iriscouch.com/farmers_markets/_design/geo/_spatiallist/geojson/full?bbox=-144,20,80,60",
+		if (localStorage.length > 1) {
+			for (var i = 0; i < localStorage.length; i++) {
+				var marketLs = $("<td>").append(localStorage.getItem("market" + i));
+				var cityLs = $("<td>").append(localStorage.getItem("city" + i));
+				var stateLs = $("<td>").append(localStorage.getItem("state" + i));
+				var rowLs = $("<tr>").append(marketLs, cityLs, stateLs);
+				var stateDataVal = localStorage.getItem("state" + i);
+				rowLs.attr("data-state", stateDataVal);
+				$("#farmers-markets").append(rowLs);
+			}
+			$("#farmers-markets").tablesorter();
+		} else {
+			$.ajax({
+			url: "http://usda.iriscouch.com/farmers_markets/_design/geo/_spatiallist/geojson/full?bbox=-144,20,-114,49",
 			dataType: "jsonp",
 			success: function(json) {
 				var marketArr = json.features;
 				var i;
-				var maxRows = Math.min(3000, marketArr.length);
-				for (var i = 0; i < maxRows; i++) {
-					var marketIndex = marketArr[i];
-					var marketTd = $("<td>").append(marketIndex.properties.MarketName);
-					var cityTd = $("<td>").append(marketIndex.properties.City);
-					var stateTd = $("<td>").append(marketIndex.properties.State);
-					var websiteTd = $("<td>").append(marketIndex.properties.Website);
-					var newRow = $("<tr>").append(marketTd, cityTd, stateTd, websiteTd);
-					var dataVal = marketIndex.properties.State;
-					var rowId = marketIndex.properties._id;
-					newRow.attr("data-state", dataVal);
-					newRow.attr("id", rowId);
-					$("#farmers-markets").append(newRow);
+				for (var i = 0; i < marketArr.length; i++) {
+					if (marketArr[i].properties.State == "California" || marketArr[i].properties.State == "Oregon" || marketArr[i].properties.State == "Washington") {
+						var marketIndex = marketArr[i];
+						var marketTd = $("<td>").append(marketIndex.properties.MarketName);
+						localStorage.setItem("market" + i, marketIndex.properties.MarketName)
+						var cityTd = $("<td>").append(marketIndex.properties.City);
+						localStorage.setItem("city" + i, marketIndex.properties.City);
+						var stateTd = $("<td>").append(marketIndex.properties.State);
+						localStorage.setItem("state" + i, marketIndex.properties.State);
+						var newRow = $("<tr>").append(marketTd, cityTd, stateTd);
+						var dataVal = marketIndex.properties.State;
+						var rowId = marketIndex.properties._id;
+						newRow.attr("data-state", dataVal);
+						newRow.attr("id", rowId);
+						$("#farmers-markets").append(newRow);
+						var lat = marketIndex.properties.y;
+						localStorage.setItem("lat" + i, marketIndex.properties.y);
+						var lng = marketIndex.properties.x;
+						localStorage.setItem("lng" + i, marketIndex.properties.x);
+					}
 				}
 				$("#farmers-markets").tablesorter();
 			}
 		});
+		}
 
 		$("#state-choice").change(function () {
 			var filter = $("#state-choice").val();
