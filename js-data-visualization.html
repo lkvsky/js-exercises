@@ -3,44 +3,38 @@
 		<meta charset="UTF-8">
 		<title>Find a Farmers Market</title>
 		<script src="http://code.jquery.com/jquery-1.7.2.min.js"></script>
-		<script src="jquery.tablesorter.js"></script>
+		<script src="lscache.js"></script>
 		<style>
-		#map-canvas {
-			width: 30%;
+		body {
+			margin: auto;
+			line-height: 1.5em;
+		}
+		#fixed-canvas {
+			width: 60%;
 			min-width: 250px;
 			height: 95%;
 			position: fixed;
-			top: 0%;
+			top: 2%;
 		}
-		#market-table {
+		#map-canvas {
+			width: 100%;
+			height: 100%;
+		}
+		#market-info {
 			float: right;
-			width: 50%;
+			width: 38%;
 		}
 		</style>
 	</head>
 	<body>
-		<div id="market-table">
+		<div id="market-info">
 			<h1>Best Coast Eats Local</h1>
-			<label for="state-choice">Filter by state:</label>
-			<select name="state-choice" id="state-choice">
-				<option value="see-all">Choose a state</option>
-				<option value="California">California</option>
-				<option value="Oregon">Oregon</option>
-				<option value="Washington">Washington</option>
-			</select>
-			<table id="farmers-markets" class="tablesorter">
-				<thead>
-					<tr class="header">
-						<th>Market</th>
-						<th>City</th>
-						<th>State</th>
-					</tr>
-				</thead>
-				<tbody>
-				</tbody>
-			</table>
+			<section id="farmers-markets">
+			</section>
 		</div>
-		<div id="map-canvas">
+		<div id="fixed-canvas">
+			<div id="map-canvas">
+		</div>
 		</div>
 		<script>
 		function initializeMap() {
@@ -49,7 +43,8 @@
 				zoom: 5,
 				mapTypeId: google.maps.MapTypeId.ROADMAP
 			};
-			var map = new google.maps.Map(document.getElementById("map-canvas"), mapOptions);
+			map = new google.maps.Map(document.getElementById("map-canvas"), mapOptions);
+
 		}
 
 		function loadScript () {
@@ -61,59 +56,47 @@
 
 		window.onload = loadScript;
 
-		if (localStorage.length > 1) {
-			for (var i = 0; i < localStorage.length; i++) {
-				var marketLs = $("<td>").append(localStorage.getItem("market" + i));
-				var cityLs = $("<td>").append(localStorage.getItem("city" + i));
-				var stateLs = $("<td>").append(localStorage.getItem("state" + i));
-				var rowLs = $("<tr>").append(marketLs, cityLs, stateLs);
-				var stateDataVal = localStorage.getItem("state" + i);
-				rowLs.attr("data-state", stateDataVal);
-				$("#farmers-markets").append(rowLs);
-			}
-			$("#farmers-markets").tablesorter();
+		var key = "http://usda.iriscouch.com/farmers_markets/_design/geo/_spatiallist/geojson/full?bbox=-144,20,-114,49";
+		var json = lscache.get(key);
+		if (json) {
+			processJSON(json);
 		} else {
-			$.ajax({
-			url: "http://usda.iriscouch.com/farmers_markets/_design/geo/_spatiallist/geojson/full?bbox=-144,20,-114,49",
-			dataType: "jsonp",
-			success: function(json) {
+			fetchJSON();
+		}
+		function processJSON (json) {
 				var marketArr = json.features;
 				var i;
 				for (var i = 0; i < marketArr.length; i++) {
 					if (marketArr[i].properties.State == "California" || marketArr[i].properties.State == "Oregon" || marketArr[i].properties.State == "Washington") {
 						var marketIndex = marketArr[i];
-						var marketTd = $("<td>").append(marketIndex.properties.MarketName);
-						localStorage.setItem("market" + i, marketIndex.properties.MarketName)
-						var cityTd = $("<td>").append(marketIndex.properties.City);
-						localStorage.setItem("city" + i, marketIndex.properties.City);
-						var stateTd = $("<td>").append(marketIndex.properties.State);
-						localStorage.setItem("state" + i, marketIndex.properties.State);
-						var newRow = $("<tr>").append(marketTd, cityTd, stateTd);
-						var dataVal = marketIndex.properties.State;
-						var rowId = marketIndex.properties._id;
-						newRow.attr("data-state", dataVal);
-						newRow.attr("id", rowId);
-						$("#farmers-markets").append(newRow);
+						var marketDiv = $("<div>").append(marketIndex.properties.MarketName);
+						var city = marketIndex.properties.City;
+						var state = marketIndex.properties.State;
+						var cityStateDiv = $("<div>").append(city + ", " + state);
+						cityStateDiv.attr("style", "font-weight: italic; font-size: .5em")
+						var totalDiv = $("<div>").append(marketDiv, cityStateDiv);
+						var totalDivId = marketIndex.properties._id;
 						var lat = marketIndex.properties.y;
-						localStorage.setItem("lat" + i, marketIndex.properties.y);
 						var lng = marketIndex.properties.x;
-						localStorage.setItem("lng" + i, marketIndex.properties.x);
+						totalDiv.attr("data-state", state);
+						totalDiv.attr("id", totalDivId);
+						totalDiv.attr("lat", lat);
+						totalDiv.attr("lng", lng);
+						$("#farmers-markets").append(totalDiv);
 					}
 				}
-				$("#farmers-markets").tablesorter();
-			}
-		});
 		}
-
-		$("#state-choice").change(function () {
-			var filter = $("#state-choice").val();
-			if (filter === "see-all") {
-				$("tbody tr").show();
-			} else {
-				$("tbody tr").hide();
-				$('tbody tr[data-state="' + filter + '"]').show();
-			}
-		});
+		function fetchJSON () {
+				$.ajax({
+				url: "http://usda.iriscouch.com/farmers_markets/_design/geo/_spatiallist/geojson/full?bbox=-144,20,-114,49",
+				dataType: "jsonp",
+				success: function(json) {
+					processJSON(json);
+					lscache.set(key, json);
+				}
+			});
+		}
+		
 		</script>
 	</body>
 </html>
