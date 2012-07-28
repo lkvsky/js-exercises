@@ -2,8 +2,6 @@
 	<head>
 		<meta charset="UTF-8">
 		<title>Find a Farmers Market</title>
-		<script src="http://code.jquery.com/jquery-1.7.2.min.js"></script>
-		<script src="lscache.js"></script>
 		<style>
 		body {
 			margin: auto;
@@ -27,8 +25,10 @@
 		</style>
 	</head>
 	<body>
+		<div id="loading">
+			Loading...
+		</div>
 		<div id="market-info">
-			<h1>Best Coast Eats Local</h1>
 			<section id="farmers-markets">
 			</section>
 		</div>
@@ -36,67 +36,71 @@
 			<div id="map-canvas">
 		</div>
 		</div>
+		<script src="http://code.jquery.com/jquery-1.7.2.min.js"></script>
+		<script src="lscache.js"></script>
+		<script src="http://maps.googleapis.com/maps/api/js?key=AIzaSyDApBGGo33H0Up28xx8FwrjFjhtE_vE9k4&sensor=true&callback=initializeApp"></script>
 		<script>
-		function initializeMap() {
+		function initializeApp() {
+			$("#loading").attr("style", "display: none;");
+			var pageHeader = $("<h1>").append("Best Coast Eats Local");
+			$("#market-info").prepend(pageHeader);
+
+			var fmMap;
 			var mapOptions = {
 				center: new google.maps.LatLng(40.580, -119.400),
 				zoom: 5,
 				mapTypeId: google.maps.MapTypeId.ROADMAP
 			};
-			map = new google.maps.Map(document.getElementById("map-canvas"), mapOptions);
+			fmMap = new google.maps.Map(document.getElementById("map-canvas"), mapOptions);
+			
+			function loadMarketData() {
+				var key = "http://usda.iriscouch.com/farmers_markets/_design/geo/_spatiallist/geojson/full?bbox=-144,20,-114,49";
+				var json = lscache.get(key);
 
-		}
+				if (json) {
+					processJSON(json);
+				} else {
+					fetchJSON();
+				}
 
-		function loadScript () {
-			var script = document.createElement("script");
-			script.type = "text/javascript";
-			script.src = "http://maps.googleapis.com/maps/api/js?key=AIzaSyDApBGGo33H0Up28xx8FwrjFjhtE_vE9k4&sensor=true&callback=initializeMap";
-			document.body.appendChild(script);
-		}
-
-		window.onload = loadScript;
-
-		var key = "http://usda.iriscouch.com/farmers_markets/_design/geo/_spatiallist/geojson/full?bbox=-144,20,-114,49";
-		var json = lscache.get(key);
-		if (json) {
-			processJSON(json);
-		} else {
-			fetchJSON();
-		}
-		function processJSON (json) {
-				var marketArr = json.features;
-				var i;
-				for (var i = 0; i < marketArr.length; i++) {
-					if (marketArr[i].properties.State == "California" || marketArr[i].properties.State == "Oregon" || marketArr[i].properties.State == "Washington") {
-						var marketIndex = marketArr[i];
-						var marketDiv = $("<div>").append(marketIndex.properties.MarketName);
-						var city = marketIndex.properties.City;
-						var state = marketIndex.properties.State;
-						var cityStateDiv = $("<div>").append(city + ", " + state);
-						cityStateDiv.attr("style", "font-weight: italic; font-size: .5em")
-						var totalDiv = $("<div>").append(marketDiv, cityStateDiv);
-						var totalDivId = marketIndex.properties._id;
-						var lat = marketIndex.properties.y;
-						var lng = marketIndex.properties.x;
-						totalDiv.attr("data-state", state);
-						totalDiv.attr("id", totalDivId);
-						totalDiv.attr("lat", lat);
-						totalDiv.attr("lng", lng);
-						$("#farmers-markets").append(totalDiv);
+				function processJSON(json) {
+					var marketArr = json.features;
+					var i;
+					for (var i = 0; i < marketArr.length; i++) {
+						if (marketArr[i].properties.State == "California" || marketArr[i].properties.State == "Oregon" || marketArr[i].properties.State == "Washington") {
+							var marketIndex = marketArr[i];
+							var market = marketIndex.properties.MarketName
+							var city = marketIndex.properties.City;
+							var state = marketIndex.properties.State;
+							var totalDivId = marketIndex.properties._id;
+							var lat = marketIndex.properties.y;
+							var lng = marketIndex.properties.x;
+							var marketDiv = $("<div>").append(market);
+							var cityStateDiv = $("<div>").append(city + ", " + state);
+							var totalDiv = $("<div>").append(marketDiv, cityStateDiv);
+							cityStateDiv.attr("style", "font-weight: italic; font-size: .5em")
+							totalDiv.attr("data-state", state);
+							totalDiv.attr("id", totalDivId);
+							totalDiv.attr("lat", lat);
+							totalDiv.attr("lng", lng);
+							$("#farmers-markets").append(totalDiv);
+						}
 					}
 				}
-		}
-		function fetchJSON () {
-				$.ajax({
-				url: "http://usda.iriscouch.com/farmers_markets/_design/geo/_spatiallist/geojson/full?bbox=-144,20,-114,49",
-				dataType: "jsonp",
-				success: function(json) {
-					processJSON(json);
-					lscache.set(key, json);
+
+				function fetchJSON() {
+						$.ajax({
+						url: "http://usda.iriscouch.com/farmers_markets/_design/geo/_spatiallist/geojson/full?bbox=-144,20,-114,49",
+						dataType: "jsonp",
+						success: function(json) {
+							processJSON(json);
+							lscache.set(key, json);
+						}
+					});
 				}
-			});
+			}
+			loadMarketData();
 		}
-		
 		</script>
 	</body>
 </html>
