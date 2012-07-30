@@ -3,51 +3,63 @@
 		<meta charset="UTF-8">
 		<title>Find a Farmers Market</title>
 		<style>
-		body {
-			margin: auto;
-			line-height: 1.5em;
+
+		#loading {
+			text-align: center;
+			position: absolute;
+			top: 50%;
+			left: 50%;
 		}
 		#fixed-canvas {
 			width: 60%;
-			min-width: 250px;
 			height: 95%;
 			position: fixed;
-			top: 2%;
+			margin: 10px;
 		}
 		#map-canvas {
 			width: 100%;
 			height: 100%;
 		}
+		#map-canvas img {
+			max-width: none;
+		}
 		#market-info {
 			float: right;
 			width: 38%;
+		}
+		#farmers-markets > div > div:nth-child(2) {
+			font-style: italic;
+		}
+		#farmers-markets > div > div:first-child {
+			font-weight: bold;
 		}
 		</style>
 	</head>
 	<body>
 		<div id="loading">
 			Loading...
+		</div>		
+		<div id="fixed-canvas">
+			<div id="map-canvas"></div>
 		</div>
 		<div id="market-info">
 			<section id="farmers-markets">
 			</section>
 		</div>
-		<div id="fixed-canvas">
-			<div id="map-canvas">
-		</div>
-		</div>
+		<link rel="stylesheet" type="text/css" href="bootstrap.min.css">
+		<script src="to-title-case.js"></script>
 		<script src="http://code.jquery.com/jquery-1.7.2.min.js"></script>
 		<script src="lscache.js"></script>
 		<script src="http://maps.googleapis.com/maps/api/js?key=AIzaSyDApBGGo33H0Up28xx8FwrjFjhtE_vE9k4&sensor=true&callback=initializeApp"></script>
 		<script>
 		function initializeApp() {
-			$("#loading").attr("style", "display: none;");
+			$("#loading").hide();
 			var pageHeader = $("<h1>").append("Best Coast Eats Local");
 			$("#market-info").prepend(pageHeader);
 
 			var fmMap;
 			var mapOptions = {
-				center: new google.maps.LatLng(40.580, -119.400),
+				center: new google.maps.LatLng(41.5, -119.400),
 				zoom: 5,
 				mapTypeId: google.maps.MapTypeId.ROADMAP
 			};
@@ -68,29 +80,48 @@
 					var i;
 					for (var i = 0; i < marketArr.length; i++) {
 						if (marketArr[i].properties.State == "California" || marketArr[i].properties.State == "Oregon" || marketArr[i].properties.State == "Washington") {
-							var marketIndex = marketArr[i];
-							var market = marketIndex.properties.MarketName
-							var city = marketIndex.properties.City;
-							var state = marketIndex.properties.State;
-							var totalDivId = marketIndex.properties._id;
-							var lat = marketIndex.properties.y;
-							var lng = marketIndex.properties.x;
-							var marketDiv = $("<div>").append(market);
-							var cityStateDiv = $("<div>").append(city + ", " + state);
-							var totalDiv = $("<div>").append(marketDiv, cityStateDiv);
-							cityStateDiv.attr("style", "font-weight: italic; font-size: .5em")
-							totalDiv.attr("data-state", state);
-							totalDiv.attr("id", totalDivId);
-							totalDiv.attr("lat", lat);
-							totalDiv.attr("lng", lng);
-							$("#farmers-markets").append(totalDiv);
+							if (marketArr[i].properties.City != undefined && marketArr[i].properties.State != undefined) {
+								var marketIndex = marketArr[i];
+								var market = marketIndex.properties.MarketName.toLowerCase().toTitleCase();
+								var city = marketIndex.properties.City.toLowerCase().toTitleCase();
+								var state = marketIndex.properties.State.toLowerCase().toTitleCase();
+								var lat = marketIndex.properties.y;
+								var lng = marketIndex.properties.x;
+								var totalDivId = marketIndex.properties._id;
+								var marketDiv = $("<div>").append(market);
+								var cityStateDiv = $("<div>").append(city + ", " + state);
+								var totalDiv = $("<div>").append(marketDiv, cityStateDiv);
+								totalDiv.attr("id", totalDivId);
+								totalDiv.attr("class", "well")
+								totalDiv.attr("data-market", market);
+								totalDiv.attr("data-state", state);
+								totalDiv.attr("data-city", city);
+								totalDiv.attr("data-lat", lat);
+								totalDiv.attr("data-lng", lng);
+								$("#farmers-markets").append(totalDiv);
+								if (lat.length > 0) {
+									var fmLatLng = new google.maps.LatLng(lat,lng);
+									var fmMarker = new google.maps.Marker({
+										position: fmLatLng,
+										title: market,
+										icon: {
+											path: google.maps.SymbolPath.CIRCLE,
+											scale: 3,
+											fillColor: "green",
+											fillOpacity: 1,
+											strokeWeight: 0
+										}
+									});
+									fmMarker.setMap(fmMap);
+								}
+							}
 						}
 					}
 				}
 
 				function fetchJSON() {
 						$.ajax({
-						url: "http://usda.iriscouch.com/farmers_markets/_design/geo/_spatiallist/geojson/full?bbox=-144,20,-114,49",
+						url: key,
 						dataType: "jsonp",
 						success: function(json) {
 							processJSON(json);
