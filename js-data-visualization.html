@@ -27,11 +27,12 @@
 			float: right;
 			width: 38%;
 		}
-		#farmers-markets > div > div:nth-child(2) {
+		#farmers-markets div {
 			font-style: italic;
 		}
-		#farmers-markets > div > div:first-child {
+		#farmers-markets div:first-line {
 			font-weight: bold;
+			font-style: normal;
 		}
 		</style>
 	</head>
@@ -57,13 +58,15 @@
 			var pageHeader = $("<h1>").append("Best Coast Eats Local");
 			$("#market-info").prepend(pageHeader);
 
-			var fmMap;
 			var mapOptions = {
 				center: new google.maps.LatLng(41.5, -119.400),
 				zoom: 5,
 				mapTypeId: google.maps.MapTypeId.ROADMAP
 			};
-			fmMap = new google.maps.Map(document.getElementById("map-canvas"), mapOptions);
+
+			var fmMap = new google.maps.Map(document.getElementById("map-canvas"), mapOptions);
+			var fmMarkerArr = [];
+			var fmInfoWindowArr = [];
 			
 			function loadMarketData() {
 				var key = "http://usda.iriscouch.com/farmers_markets/_design/geo/_spatiallist/geojson/full?bbox=-144,20,-114,49";
@@ -87,23 +90,21 @@
 								var state = marketIndex.properties.State.toLowerCase().toTitleCase();
 								var lat = marketIndex.properties.y;
 								var lng = marketIndex.properties.x;
-								var totalDivId = marketIndex.properties._id;
-								var marketDiv = $("<div>").append(market);
-								var cityStateDiv = $("<div>").append(city + ", " + state);
-								var totalDiv = $("<div>").append(marketDiv, cityStateDiv);
-								totalDiv.attr("id", totalDivId);
-								totalDiv.attr("class", "well")
-								totalDiv.attr("data-market", market);
-								totalDiv.attr("data-state", state);
-								totalDiv.attr("data-city", city);
-								totalDiv.attr("data-lat", lat);
-								totalDiv.attr("data-lng", lng);
-								$("#farmers-markets").append(totalDiv);
+								var marketDivId = marketIndex.properties._id;
+								var marketDiv = $("<div>").append(market + "<br>" + city + ", " + state);
+								marketDiv.attr("id", marketDivId);
+								marketDiv.attr("class", "well")
+								marketDiv.attr("data-market", market);
+								marketDiv.attr("data-state", state);
+								marketDiv.attr("data-city", city);
+								marketDiv.attr("data-lat", lat);
+								marketDiv.attr("data-lng", lng);
+								$("#farmers-markets").append(marketDiv);
 								if (lat.length > 0) {
 									var fmLatLng = new google.maps.LatLng(lat,lng);
 									var fmMarker = new google.maps.Marker({
 										position: fmLatLng,
-										title: market,
+										title: marketDivId,
 										icon: {
 											path: google.maps.SymbolPath.CIRCLE,
 											scale: 3,
@@ -113,6 +114,12 @@
 										}
 									});
 									fmMarker.setMap(fmMap);
+									var fmInfoWindow = new google.maps.InfoWindow({
+										content: marketDivId
+									});
+									google.maps.event.addListener(fmMarker, "click", function() {
+										fmInfoWindow.open(fmMap,fmMarker);
+									});
 								}
 							}
 						}
