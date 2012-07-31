@@ -54,31 +54,56 @@
 		<script src="http://maps.googleapis.com/maps/api/js?key=AIzaSyDApBGGo33H0Up28xx8FwrjFjhtE_vE9k4&sensor=true&callback=initializeApp"></script>
 		<script>
 		function initializeApp() {
+			//Hide loading text and set up page headers
 			$("#loading").hide();
 			var pageHeader = $("<h1>").append("Best Coast Eats Local");
 			$("#market-info").prepend(pageHeader);
 
+			//Initial map setup
 			var mapOptions = {
 				center: new google.maps.LatLng(41.5, -119.400),
 				zoom: 5,
 				mapTypeId: google.maps.MapTypeId.ROADMAP
 			};
-
 			var fmMap = new google.maps.Map(document.getElementById("map-canvas"), mapOptions);
-			var fmMarkerArr = [];
-			var fmInfoWindowArr = [];
-			
+
+			//Function to create markers
+			function createMarker(lattitude, longitude, markerId, name) {
+				var fmLatLng = new google.maps.LatLng(lattitude,longitude);
+				var fmMarker = new google.maps.Marker({
+					position: fmLatLng,
+					title: markerId,
+					icon: {
+						path: google.maps.SymbolPath.CIRCLE,
+						scale: 3,
+						fillColor: "green",
+						fillOpacity: 1,
+						strokeWeight: 0
+					}
+				});
+				fmMarker.setMap(fmMap);
+				var fmInfoWindow = new google.maps.InfoWindow({
+					content: name
+				});
+				google.maps.event.addListener(fmMarker, "click", function() {
+					fmInfoWindow.open(fmMap,fmMarker);
+				});
+			}
+		
+			//Loads all farmer's market data and populates map accordingly
 			function loadMarketData() {
 				var key = "http://usda.iriscouch.com/farmers_markets/_design/geo/_spatiallist/geojson/full?bbox=-144,20,-114,49";
 				var json = lscache.get(key);
 
+				//Check if json file is stored in local storage, if not, ajax
 				if (json) {
-					processJSON(json);
+					processData(json);
 				} else {
 					fetchJSON();
 				}
 
-				function processJSON(json) {
+				//Process the JSON file and populate app accordingly
+				function processData(json) {
 					var marketArr = json.features;
 					var i;
 					for (var i = 0; i < marketArr.length; i++) {
@@ -100,32 +125,15 @@
 								marketDiv.attr("data-lat", lat);
 								marketDiv.attr("data-lng", lng);
 								$("#farmers-markets").append(marketDiv);
-								if (lat.length > 0) {
-									var fmLatLng = new google.maps.LatLng(lat,lng);
-									var fmMarker = new google.maps.Marker({
-										position: fmLatLng,
-										title: marketDivId,
-										icon: {
-											path: google.maps.SymbolPath.CIRCLE,
-											scale: 3,
-											fillColor: "green",
-											fillOpacity: 1,
-											strokeWeight: 0
-										}
-									});
-									fmMarker.setMap(fmMap);
-									var fmInfoWindow = new google.maps.InfoWindow({
-										content: marketDivId
-									});
-									google.maps.event.addListener(fmMarker, "click", function() {
-										fmInfoWindow.open(fmMap,fmMarker);
-									});
+								if (lat) {
+									createMarker(lat, lng, marketDivId, market);
 								}
 							}
 						}
 					}
 				}
 
+				//Ajax call to fetch data
 				function fetchJSON() {
 						$.ajax({
 						url: key,
