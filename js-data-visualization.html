@@ -23,7 +23,7 @@
 		#map-canvas img {
 			max-width: none;
 		}
-		#market-info {
+		#side-bar {
 			float: right;
 			width: 38%;
 		}
@@ -43,9 +43,11 @@
 		<div id="fixed-canvas">
 			<div id="map-canvas"></div>
 		</div>
-		<div id="market-info">
-			<section id="farmers-markets">
-			</section>
+		<div id="side-bar">
+			<div id="market-info">
+				<section id="farmers-markets">
+				</section>
+			</div>
 		</div>
 		<link rel="stylesheet" type="text/css" href="bootstrap.min.css">
 		<script src="to-title-case.js"></script>
@@ -57,7 +59,12 @@
 			//Hide loading text and set up page headers
 			$("#loading").hide();
 			var pageHeader = $("<h1>").append("Best Coast Eats Local");
-			$("#market-info").prepend(pageHeader);
+			$("#side-bar").prepend(pageHeader);
+			var search = $("<form>").attr("class", "well form-search");
+			var input = $("<input>").attr("type", "text").attr("class", "input-medium search-query");
+			var button = $("<button>").attr("type", "submit").attr("class", "btn").text("Search");
+			search.append(input, button);
+			$("#market-info").prepend(search);
 
 			//Initial map setup
 			var mapOptions = {
@@ -66,10 +73,35 @@
 				mapTypeId: google.maps.MapTypeId.ROADMAP
 			};
 			var fmMap = new google.maps.Map(document.getElementById("map-canvas"), mapOptions);
+			var geocoder = new google.maps.Geocoder();
 
-			//Function to create markers
-			function createMarker(lattitude, longitude, markerId, name) {
-				var fmLatLng = new google.maps.LatLng(lattitude,longitude);
+			//Geocode user input
+			function codeAddress() {
+				var address = $("input").val();
+				geocoder.geocode( {"address": address}, function(results, status) {
+					if (status == google.maps.GeocoderStatus.OK) {
+						fmMap.setCenter(results[0].geometry.location);
+						mapOptions.zoom = 8;
+					} else {
+						alert("Oops -- We don't know where that is!")
+					}
+				});
+			}
+			var searchButton = $("button")[0];
+			searchButton.addEventListener("click", codeAddress, false);
+
+			//Flesh out UI with markers, info windows and market info
+			function generateUi(lat, lng, markerId, market, city, state) {
+				var marketDiv = $("<div>").append(market + "<br>" + city + ", " + state);
+				marketDiv.attr("id", markerId);
+				marketDiv.attr("class", "well")
+				marketDiv.attr("data-market", market);
+				marketDiv.attr("data-state", state);
+				marketDiv.attr("data-city", city);
+				marketDiv.attr("data-lat", lat);
+				marketDiv.attr("data-lng", lng);
+				$("#farmers-markets").append(marketDiv);
+				var fmLatLng = new google.maps.LatLng(lat,lng);
 				var fmMarker = new google.maps.Marker({
 					position: fmLatLng,
 					title: markerId,
@@ -83,7 +115,7 @@
 				});
 				fmMarker.setMap(fmMap);
 				var fmInfoWindow = new google.maps.InfoWindow({
-					content: name
+					content: market + "<br>" + city + ", " + state
 				});
 				google.maps.event.addListener(fmMarker, "click", function() {
 					fmInfoWindow.open(fmMap,fmMarker);
@@ -116,17 +148,8 @@
 								var lat = marketIndex.properties.y;
 								var lng = marketIndex.properties.x;
 								var marketDivId = marketIndex.properties._id;
-								var marketDiv = $("<div>").append(market + "<br>" + city + ", " + state);
-								marketDiv.attr("id", marketDivId);
-								marketDiv.attr("class", "well")
-								marketDiv.attr("data-market", market);
-								marketDiv.attr("data-state", state);
-								marketDiv.attr("data-city", city);
-								marketDiv.attr("data-lat", lat);
-								marketDiv.attr("data-lng", lng);
-								$("#farmers-markets").append(marketDiv);
 								if (lat) {
-									createMarker(lat, lng, marketDivId, market);
+									generateUi(lat, lng, marketDivId, market, city, state);
 								}
 							}
 						}
