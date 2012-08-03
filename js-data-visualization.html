@@ -45,6 +45,13 @@
 		</div>
 		<div id="side-bar">
 			<div id="market-info">
+				<div id="page-header" style="display: none;">
+					<h1>Best Coast Eats Local</h1>
+				</div>
+				<div id="search-form" class="well form-search" style="display: none;">	
+					<input id="search-map-input" type="text" class="input-large search-query">
+					<button id="search-map-btn" class="btn">Search</button>
+				</div>
 				<section id="farmers-markets">
 				</section>
 			</div>
@@ -56,15 +63,10 @@
 		<script src="http://maps.googleapis.com/maps/api/js?key=AIzaSyDApBGGo33H0Up28xx8FwrjFjhtE_vE9k4&sensor=true&callback=initializeApp"></script>
 		<script>
 		function initializeApp() {
-			//Hide loading text and set up page headers
+			//Hide loading text and display header
 			$("#loading").hide();
-			var pageHeader = $("<h1>").append("Best Coast Eats Local");
-			$("#side-bar").prepend(pageHeader);
-			var search = $("<form>").attr("class", "well form-search");
-			var input = $("<input>").attr("type", "text").attr("class", "input-medium search-query");
-			var button = $("<button>").attr("type", "submit").attr("class", "btn").text("Search");
-			search.append(input, button);
-			$("#market-info").prepend(search);
+			$("#page-header").show();
+			$("#search-form").show();
 
 			//Initial map setup
 			var mapOptions = {
@@ -77,18 +79,17 @@
 
 			//Geocode user input
 			function codeAddress() {
-				var address = $("input").val();
+				var address = $("#search-map-input").val();
 				geocoder.geocode( {"address": address}, function(results, status) {
 					if (status == google.maps.GeocoderStatus.OK) {
 						fmMap.setCenter(results[0].geometry.location);
-						mapOptions.zoom = 8;
+						fmMap.setZoom(12);
 					} else {
 						alert("Oops -- We don't know where that is!")
 					}
 				});
 			}
-			var searchButton = $("button")[0];
-			searchButton.addEventListener("click", codeAddress, false);
+			$("#search-map-btn").on("click", codeAddress);
 
 			//Flesh out UI with markers, info windows and market info
 			function generateUi(lat, lng, markerId, market, city, state) {
