@@ -76,14 +76,16 @@
 			};
 			var fmMap = new google.maps.Map(document.getElementById("map-canvas"), mapOptions);
 			var geocoder = new google.maps.Geocoder();
+			var fmMarker;
 
 			//Geocode user input
 			function codeAddress() {
 				var address = $("#search-map-input").val();
+				var newMarkerOptions = google.maps.MarkerOptions;
 				geocoder.geocode( {"address": address}, function(results, status) {
 					if (status == google.maps.GeocoderStatus.OK) {
 						fmMap.setCenter(results[0].geometry.location);
-						fmMap.setZoom(12);
+						fmMap.setZoom(14);
 					} else {
 						alert("Oops -- We don't know where that is!")
 					}
@@ -92,20 +94,20 @@
 			$("#search-map-btn").on("click", codeAddress);
 
 			//Flesh out UI with markers, info windows and market info
-			function generateUi(lat, lng, markerId, market, city, state) {
-				var marketDiv = $("<div>").append(market + "<br>" + city + ", " + state);
-				marketDiv.attr("id", markerId);
+			function generateUi(info) {
+				var marketDiv = $("<div>").append(info.market + "<br>" + info.city + ", " + info.state);
+				marketDiv.attr("id", info.markerId);
 				marketDiv.attr("class", "well")
-				marketDiv.attr("data-market", market);
-				marketDiv.attr("data-state", state);
-				marketDiv.attr("data-city", city);
-				marketDiv.attr("data-lat", lat);
-				marketDiv.attr("data-lng", lng);
+				marketDiv.attr("data-market", info.market);
+				marketDiv.attr("data-state", info.state);
+				marketDiv.attr("data-city", info.city);
+				marketDiv.attr("data-lat", info.lat);
+				marketDiv.attr("data-lng", info.lng);
 				$("#farmers-markets").append(marketDiv);
-				var fmLatLng = new google.maps.LatLng(lat,lng);
+				var fmLatLng = new google.maps.LatLng(info.lat,info.lng);
 				var fmMarker = new google.maps.Marker({
 					position: fmLatLng,
-					title: markerId,
+					title: info.markerId,
 					icon: {
 						path: google.maps.SymbolPath.CIRCLE,
 						scale: 3,
@@ -116,7 +118,7 @@
 				});
 				fmMarker.setMap(fmMap);
 				var fmInfoWindow = new google.maps.InfoWindow({
-					content: market + "<br>" + city + ", " + state
+					content: info.market + "<br>" + info.city + ", " + info.state
 				});
 				google.maps.event.addListener(fmMarker, "click", function() {
 					fmInfoWindow.open(fmMap,fmMarker);
@@ -149,8 +151,16 @@
 								var lat = marketIndex.properties.y;
 								var lng = marketIndex.properties.x;
 								var marketDivId = marketIndex.properties._id;
+								var uiObject = {
+									lat: lat,
+									lng: lng,
+									markerId: marketDivId,
+									market: market,
+									city: city,
+									state: state
+								};
 								if (lat) {
-									generateUi(lat, lng, marketDivId, market, city, state);
+									generateUi(uiObject);
 								}
 							}
 						}
