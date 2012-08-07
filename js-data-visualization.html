@@ -85,7 +85,7 @@
 				geocoder.geocode( {"address": address}, function(results, status) {
 					if (status == google.maps.GeocoderStatus.OK) {
 						fmMap.setCenter(results[0].geometry.location);
-						fmMap.setZoom(14);
+						fmMap.setZoom(16);
 					} else {
 						alert("Oops -- We don't know where that is!")
 					}
@@ -95,15 +95,15 @@
 
 			//Flesh out UI with markers, info windows and market info
 			function generateUi(info) {
-				var marketDiv = $("<div>").append(info.market + "<br>" + info.city + ", " + info.state);
-				marketDiv.attr("id", info.markerId);
-				marketDiv.attr("class", "well")
-				marketDiv.attr("data-market", info.market);
-				marketDiv.attr("data-state", info.state);
-				marketDiv.attr("data-city", info.city);
-				marketDiv.attr("data-lat", info.lat);
-				marketDiv.attr("data-lng", info.lng);
-				$("#farmers-markets").append(marketDiv);
+				var $marketDiv = $("<div>").append(info.market + "<br>" + info.city + ", " + info.state);
+				$marketDiv.attr("id", info.markerId);
+				$marketDiv.attr("class", "well")
+				$marketDiv.attr("data-market", info.market);
+				$marketDiv.attr("data-state", info.state);
+				$marketDiv.attr("data-city", info.city);
+				$marketDiv.attr("data-lat", info.lat);
+				$marketDiv.attr("data-lng", info.lng);
+				$("#farmers-markets").append($marketDiv);
 				var fmLatLng = new google.maps.LatLng(info.lat,info.lng);
 				var fmMarker = new google.maps.Marker({
 					position: fmLatLng,
@@ -122,6 +122,11 @@
 				});
 				google.maps.event.addListener(fmMarker, "click", function() {
 					fmInfoWindow.open(fmMap,fmMarker);
+				});
+				google.maps.event.addDomListener($marketDiv[0], "click", function() {
+					fmInfoWindow.open(fmMap,fmMarker);
+					fmMap.setZoom(16);
+					fmMap.setCenter(info.lat,info.lng);
 				});
 			}
 		
