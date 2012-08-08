@@ -30,16 +30,22 @@
 		#farmers-markets div {
 			font-style: italic;
 		}
+		#farmers-markets div:hover {
+			background: #8DBC8F;
+		}
 		#farmers-markets div:first-line {
 			font-weight: bold;
 			font-style: normal;
+		}
+		.selected-div {
+			background: #8DBC8F;
 		}
 		</style>
 	</head>
 	<body>
 		<div id="loading">
 			Loading...
-		</div>		
+		</div>	
 		<div id="fixed-canvas">
 			<div id="map-canvas"></div>
 		</div>
@@ -72,7 +78,10 @@
 			var mapOptions = {
 				center: new google.maps.LatLng(41.5, -119.400),
 				zoom: 5,
-				mapTypeId: google.maps.MapTypeId.ROADMAP
+				mapTypeId: google.maps.MapTypeId.ROADMAP,
+				zoomControl: false,
+				mapTypeControl: false,
+				streetViewControl: false
 			};
 			var fmMap = new google.maps.Map(document.getElementById("map-canvas"), mapOptions);
 			var geocoder = new google.maps.Geocoder();
@@ -85,7 +94,7 @@
 				geocoder.geocode( {"address": address}, function(results, status) {
 					if (status == google.maps.GeocoderStatus.OK) {
 						fmMap.setCenter(results[0].geometry.location);
-						fmMap.setZoom(16);
+						fmMap.setZoom(14);
 					} else {
 						alert("Oops -- We don't know where that is!")
 					}
@@ -108,15 +117,10 @@
 				var fmMarker = new google.maps.Marker({
 					position: fmLatLng,
 					title: info.markerId,
-					icon: {
-						path: google.maps.SymbolPath.CIRCLE,
-						scale: 3,
-						fillColor: "green",
-						fillOpacity: 1,
-						strokeWeight: 0
-					}
 				});
 				fmMarker.setMap(fmMap);
+				fmMarker.setVisible(false);
+				$($marketDiv[0]).hide();
 				var fmInfoWindow = new google.maps.InfoWindow({
 					content: info.market + "<br>" + info.city + ", " + info.state
 				});
@@ -124,9 +128,24 @@
 					fmInfoWindow.open(fmMap,fmMarker);
 				});
 				google.maps.event.addDomListener($marketDiv[0], "click", function() {
+					fmMap.setZoom(14);
+					fmMap.setCenter(fmLatLng);
 					fmInfoWindow.open(fmMap,fmMarker);
-					fmMap.setZoom(16);
-					fmMap.setCenter(info.lat,info.lng);
+				});
+				//Trying to set visibility for only markers/divs in the viewport, but it seems
+				//like all markers and divs are being set to visible
+				google.maps.event.addListener(fmMap, "bounds_changed", function() {
+					if (fmMap.zoom > 5) {
+						var currentBounds = fmMap.getBounds();
+						var boundsContains = currentBounds.contains(fmLatLng);
+						if (boundsContains = true) {
+							fmMarker.setVisible(true);
+							$($marketDiv[0]).show();
+						} else {
+							fmMarker.setVisible(false);
+							$($marketDiv[0]).hide();
+						}
+					}
 				});
 			}
 		
