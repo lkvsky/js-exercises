@@ -1,0 +1,33 @@
+#loading {
+			text-align: center;
+			position: absolute;
+			top: 50%;
+			left: 50%;
+		}
+		#fixed-canvas {
+			width: 60%;
+			height: 95%;
+			position: fixed;
+			margin: 10px;
+		}
+		#map-canvas {
+			width: 100%;
+			height: 100%;
+		}
+		#map-canvas img {
+			max-width: none;
+		}
+		#side-bar {
+			float: right;
+			width: 38%;
+		}
+		#farmers-markets div {
+			font-style: italic;
+		}
+		#farmers-markets div:hover, #farmers-markets div.selected {
+			background: #8DBC8F;
+		}
+		#farmers-markets div:first-line {
+			font-weight: bold;
+			font-style: normal;
+		}
