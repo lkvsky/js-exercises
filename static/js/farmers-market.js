@@ -21,7 +21,7 @@ function initializeApp() {
 				var address = $("#search-map-input").val();
 				var newMarkerOptions = google.maps.MarkerOptions;
 				geocoder.geocode( {"address": address}, function(results, status) {
-					if (status == google.maps.GeocoderStatus.OK) {
+					if (status === google.maps.GeocoderStatus.OK) {
 						fmMap.setCenter(results[0].geometry.location);
 						fmMap.setZoom(14);
 					} else {
@@ -30,6 +30,11 @@ function initializeApp() {
 				});
 			}
 			$("#search-map-btn").on("click", codeAddress);
+			$("#search-map-input").keyup(function(e) {
+				if(e.keyCode === 13) {
+					codeAddress();
+				}
+			});
 
 			//Flesh out UI with markers, info windows and market info
 			function generateUi(info) {
@@ -53,18 +58,18 @@ function initializeApp() {
 				var fmInfoWindow = new google.maps.InfoWindow({
 					content: info.market + "<br>" + info.city + ", " + info.state
 				});
-				google.maps.event.addListener(fmMarker, "click", function() {
-					fmInfoWindow.open(fmMap,fmMarker);
-					$("#farmers-markets").removeClass("selected");
-					$marketDiv.addClass("selected");
-				});
-				google.maps.event.addDomListener($marketDiv[0], "click", function() {
+
+				//set up infowindows
+				function openInfoWindow() {
 					$("#farmers-markets div").removeClass("selected");
 					$marketDiv.addClass("selected");
 					fmMap.setZoom(14);
 					fmMap.setCenter(fmLatLng);
 					fmInfoWindow.open(fmMap,fmMarker);
-				});
+				}
+				google.maps.event.addListener(fmMarker, "click", openInfoWindow);
+				google.maps.event.addDomListener($marketDiv[0], "click", openInfoWindow);
+
 				//Setting visibility for only markers/divs in the viewport
 				google.maps.event.addListener(fmMap, "bounds_changed", function() {
 					if (fmMap.zoom > 5) {
