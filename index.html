@@ -1,0 +1,35 @@
+<html>
+	<head>
+		<meta charset="UTF-8">
+		<title>Find a Farmers Market</title>
+		<link rel="stylesheet" type="text/css" href="static/css/lib/bootstrap.min.css">
+		<link rel="stylesheet" type="text/css" href="static/css/farmers-market.css"></style>
+	</head>
+	<body>
+		<div id="loading">
+			Loading...
+		</div>	
+		<div id="fixed-canvas">
+			<div id="map-canvas"></div>
+		</div>
+		<div id="side-bar">
+			<div id="market-info">
+				<div id="page-header" style="display: none;">
+					<h1>Best Coast Eats Local</h1>
+				</div>
+				<div id="search-form" class="well form-search" style="display: none;">	
+					<input id="search-map-input" type="text" class="input-large search-query">
+					<button id="search-map-btn" class="btn">Search</button>
+				</div>
+				<section id="farmers-markets">
+				</section>
+			</div>
+		</div>
+		
+		<script src="static/js/lib/to-title-case.js"></script>
+		<script src="http://code.jquery.com/jquery-1.7.2.min.js"></script>
+		<script src="static/js/lib/lscache.js"></script>
+		<script src="static/js/farmers-market.js"></script>
+		<script src="http://maps.googleapis.com/maps/api/js?key=AIzaSyDApBGGo33H0Up28xx8FwrjFjhtE_vE9k4&sensor=true&callback=initializeApp"></script>
+	</body>
+</html>
