@@ -4,6 +4,10 @@
 	top: 50%;
 	left: 50%;
 }
+#login {
+	text-align: right;
+	padding-right: 10px;
+}
 #fixed-canvas {
 	width: 60%;
 	height: 95%;

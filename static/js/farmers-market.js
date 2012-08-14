@@ -3,6 +3,7 @@ function initializeApp() {
 			$("#loading").hide();
 			$("#page-header").show();
 			$("#search-form").show();
+			$("#fm-container").show();
 
 			//Initial map setup
 			var initialLocation;
@@ -107,8 +108,6 @@ function initializeApp() {
 				function openInfoWindow() {
 					$("#farmers-markets div").removeClass("selected");
 					$marketDiv.addClass("selected");
-					fmMap.setZoom(14);
-					fmMap.setCenter(fmLatLng);
 					fmInfoWindow.open(fmMap,fmMarker);
 				}
 				google.maps.event.addListener(fmMarker, "click", openInfoWindow);
