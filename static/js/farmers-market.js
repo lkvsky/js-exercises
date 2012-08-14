@@ -5,16 +5,30 @@ function initializeApp() {
 			$("#search-form").show();
 
 			//Initial map setup
+			var initialLocation;
+			var defaultLocation = new google.maps.LatLng(41.5, -119.400);
+			var initialZoom = 14;
+			var defaultZoom = 5;
+
 			var mapOptions = {
-				center: new google.maps.LatLng(41.5, -119.400),
-				zoom: 5,
 				mapTypeId: google.maps.MapTypeId.ROADMAP,
 				mapTypeControl: false,
 				streetViewControl: false
 			};
 			var fmMap = new google.maps.Map(document.getElementById("map-canvas"), mapOptions);
 			var geocoder = new google.maps.Geocoder();
-			var fmMarker;
+
+			//Check the user's location
+			if(navigator.geolocation) {
+				navigator.geolocation.getCurrentPosition(function(position) {
+					initialLocation = new google.maps.LatLng(position.coords.latitude,position.coords.longitude);
+					fmMap.setCenter(initialLocation);
+					fmMap.setZoom(initialZoom);
+				});
+			} else {
+				fmMap.setCenter(defaultLocation);
+				fmMap.setZoom(defaultZoom);
+			}
 
 			//Geocode user input
 			function codeAddress() {
@@ -57,7 +71,7 @@ function initializeApp() {
 				$($marketDiv[0]).hide();
 				var fmInfoWindow = new google.maps.InfoWindow({
 				});
-				fmInfoWindow.maxWidth = 200;
+				fmInfoWindow.maxWidth = 250;
 
 				//setting info window content
 				function infoWindowContent() {
@@ -80,7 +94,11 @@ function initializeApp() {
 					if (specialtiesStr === "") {
 						specialtiesStr = "Unknown";
 					}
-					var windowContent = "<strong>" + info.market + "</strong>" + "<br>" + info.street + "<br>" + info.city + ", " + info.abrState + " " + info.zip + "<br><br><strong>Specialties:</strong> " + specialtiesStr;
+					var website = info.website;
+					if (website === "" || website === " ") {
+						wesbite = "Unknown";
+					}
+					var windowContent = "<strong>" + info.market + "</strong>" + "<br>" + info.street + "<br>" + info.city + ", " + info.abrState + " " + info.zip + "<br><br><strong>Specialties:</strong> " + specialtiesStr + "<br><br><strong><a href='" + website + "' target='_blank'>Website</a></strong>";
 					fmInfoWindow.setContent(windowContent);
 				}
 				infoWindowContent();
@@ -140,11 +158,11 @@ function initializeApp() {
 								var state = marketIndex.properties.State.toLowerCase().toTitleCase();
 								var abrState;
 								if (state === "California") {
-									abrState = "Ca";
+									abrState = "CA";
 								} else if (state === "Oregon") {
-									abrState = "Or";
+									abrState = "OR";
 								} else if (state === "Washington") {
-									abrState = "Wa";
+									abrState = "WA";
 								}
 								var street = marketIndex.properties.Street;
 								var zip = marketIndex.properties.Zip;
@@ -167,6 +185,7 @@ function initializeApp() {
 									meat: marketIndex.properties.Meats,
 									plants: marketIndex.properties.Plants
 								};
+								var website = marketIndex.properties.Website;
 								for (key in marketItems) {
 									if (marketItems[key] === "1") {
 										marketItems[key] = "" + key + "";
@@ -183,7 +202,8 @@ function initializeApp() {
 									state: state,
 									street: street,
 									zip: zip,
-									abrState: abrState
+									abrState: abrState,
+									website: website
 								};
 								if (lat) {
 									generateUi(uiObject, marketItems);
