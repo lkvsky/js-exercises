@@ -1,7 +1,6 @@
 function initializeApp() {
 			//Hide loading text and display header
 			$("#loading").hide();
-			$("#page-header").show();
 			$("#search-form").show();
 			$("#fm-container").show();
 
@@ -51,8 +50,7 @@ function initializeApp() {
 					}
 				});
 			}
-			$("#search-map-btn").on("click", codeAddress);
-			$("#search-map-input").keyup(function(e) {
+			$("#search-map-input").keypress(function(e) {
 				if(e.keyCode === 13) {
 					codeAddress();
 				}
@@ -120,7 +118,7 @@ function initializeApp() {
 					}
 					var website = info.website;
 					if (website === "" || website === " ") {
-						wesbite = "Unknown";
+						website = "Unknown";
 					}
 					var windowContent = "<strong>" + info.market + "</strong>" + "<br>" + info.street + "<br>" + info.city + ", " + info.abrState + " " + info.zip + "<br><br><strong>Specialties:</strong> " + specialtiesStr + "<br><br><strong><a href='" + website + "' target='_blank'>Website</a></strong>";
 					fmInfoWindow.setContent(windowContent);
@@ -164,14 +162,12 @@ function initializeApp() {
 								var market = marketIndex.properties.MarketName.toLowerCase().toTitleCase();
 								var city = marketIndex.properties.City.toLowerCase().toTitleCase();
 								var state = marketIndex.properties.State.toLowerCase().toTitleCase();
-								var abrState;
-								if (state === "California") {
-									abrState = "CA";
-								} else if (state === "Oregon") {
-									abrState = "OR";
-								} else if (state === "Washington") {
-									abrState = "WA";
-								}
+								var stateMappings = {
+									"California": "CA",
+									"Washington": "WA",
+									"Oregon": "OR"
+								};
+								var abrState = stateMappings[state];
 								var street = marketIndex.properties.Street;
 								var zip = marketIndex.properties.Zip;
 								var lat = marketIndex.properties.y;

@@ -10,18 +10,23 @@
 			Loading...
 		</div>
 		<div id="fm-container" style="display: none;">
-			<div id="login">
-				<strong>Hello!</strong> <a href="{{ url }}">{{ url_linktext }}</a>
+			<div class="navbar navbar-fixed-top">
+				<div class="navbar-inner">
+					<div class="container">
+						<a class="brand" href="#">
+							Best Coast Eats Local
+						</a>
+						<div class="navbar-search pull-left">
+							<input id="search-map-input" type="text" class="search-query" placeholder="Search">
+						</div>
+						<div class="navbar-text pull-right">
+							<a href="{{ url }}">{{ url_linktext }}</a>
+						</div>
+					</div>
+				</div>
 			</div>
 			<div id="side-bar">
 				<div id="market-info">
-					<div id="page-header" style="display: none;">
-						<h1>Best Coast Eats Local</h1>
-					</div>
-					<div id="search-form" class="well form-search" style="display: none;">	
-						<input id="search-map-input" type="text" class="input-large search-query">
-						<button id="search-map-btn" class="btn">Search</button>
-					</div>
 					<section id="farmers-markets">
 					</section>
 				</div>

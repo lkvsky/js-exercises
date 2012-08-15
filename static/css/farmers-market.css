@@ -4,20 +4,12 @@
 	top: 50%;
 	left: 50%;
 }
-#container {
-	height: 90%;
-	width: 95%;
-	margin: auto;
-}
-#login {
-	text-align: right;
-	padding-right: 10px;
-}
 #fixed-canvas {
 	width: 60%;
-	height: 95%;
+	height: 87%;
 	position: fixed;
-	margin: 10px;
+	top: 60px;
+	margin-left: 10px;
 }
 #map-canvas {
 	width: 100%;
@@ -26,9 +18,14 @@
 #map-canvas img {
 	max-width: none;
 }
+#search-map-input {
+	height: 30px;
+}
 #side-bar {
 	float: right;
-	width: 38%;
+	width: 35%;
+	margin-right: 10px;
+	margin-top: 60px;
 }
 #farmers-markets div {
 	font-style: italic;
