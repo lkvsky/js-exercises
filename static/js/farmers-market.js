@@ -174,7 +174,7 @@ function initializeApp() {
 									soap: marketIndex.properties.Soap,
 									nuts: marketIndex.properties.Nuts,
 									cheese: marketIndex.properties.Cheese,
-									seafod: marketIndex.properties.Seafood,
+									seafood: marketIndex.properties.Seafood,
 									fruit: marketIndex.properties,
 									herbs: marketIndex.properties.Herbs,
 									honey: marketIndex.properties.Honey,

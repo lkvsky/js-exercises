@@ -4,6 +4,11 @@
 	top: 50%;
 	left: 50%;
 }
+#container {
+	height: 90%;
+	width: 95%;
+	margin: auto;
+}
 #login {
 	text-align: right;
 	padding-right: 10px;
