@@ -10,7 +10,7 @@ function initializeApp() {
 			var defaultLocation = new google.maps.LatLng(41.5, -119.400);
 			var initialZoom = 14;
 			var defaultZoom = 5;
-
+			var browserSupportFlag = new Boolean();
 			var mapOptions = {
 				mapTypeId: google.maps.MapTypeId.ROADMAP,
 				mapTypeControl: false,
@@ -20,15 +20,22 @@ function initializeApp() {
 			var geocoder = new google.maps.Geocoder();
 
 			//Check the user's location
+			function handleNoGeolocation() {
+				fmMap.setCenter(defaultLocation);
+				fmMap.setZoom(defaultZoom);
+			}
 			if(navigator.geolocation) {
+				browserSupportFlag = true;
 				navigator.geolocation.getCurrentPosition(function(position) {
 					initialLocation = new google.maps.LatLng(position.coords.latitude,position.coords.longitude);
 					fmMap.setCenter(initialLocation);
 					fmMap.setZoom(initialZoom);
+				}, function() {
+					handleNoGeolocation(browserSupportFlag);
 				});
 			} else {
-				fmMap.setCenter(defaultLocation);
-				fmMap.setZoom(defaultZoom);
+				browserSupportFlag = false;
+				handleNoGeolocation(browserSupportFlag);
 			}
 
 			//Geocode user input
@@ -68,11 +75,27 @@ function initializeApp() {
 					title: info.markerId
 				});
 				fmMarker.setMap(fmMap);
-				fmMarker.setVisible(false);
-				$($marketDiv[0]).hide();
 				var fmInfoWindow = new google.maps.InfoWindow({
 				});
 				fmInfoWindow.maxWidth = 250;
+				fmMarker.setVisible(false);
+				$marketDiv.hide();
+
+				//Setting visibility for only markers/divs in the viewport
+				function visibleMarkers() {
+					if (fmMap.zoom > 5) {
+						var currentBounds = fmMap.getBounds();
+						var boundsContains = currentBounds.contains(fmLatLng);
+						if (boundsContains === true) {
+							fmMarker.setVisible(true);
+							$marketDiv.show();
+						} else {
+							fmMarker.setVisible(false);
+							$marketDiv.hide();
+						}
+					}
+				}
+				visibleMarkers();
 
 				//setting info window content
 				function infoWindowContent() {
@@ -115,21 +138,7 @@ function initializeApp() {
 				google.maps.event.addListener(fmInfoWindow, "closeclick", function() {
 					$("#farmers-markets div").removeClass("selected");
 				});
-
-				//Setting visibility for only markers/divs in the viewport
-				google.maps.event.addListener(fmMap, "bounds_changed", function() {
-					if (fmMap.zoom > 5) {
-						var currentBounds = fmMap.getBounds();
-						var boundsContains = currentBounds.contains(fmLatLng);
-						if (boundsContains === true) {
-							fmMarker.setVisible(true);
-							$marketDiv.show();
-						} else {
-							fmMarker.setVisible(false);
-							$marketDiv.hide();
-						}
-					}
-				});
+				google.maps.event.addListener(fmMap, "bounds_changed", visibleMarkers);
 			}
 		
 			//Loads all farmer's market data and populates map accordingly
