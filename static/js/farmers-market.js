@@ -1,7 +1,6 @@
 function initializeApp() {
 			//Hide loading text and display header
 			$("#loading").hide();
-			$("#search-form").show();
 			$("#fm-container").show();
 
 			//Initial map setup
@@ -9,7 +8,6 @@ function initializeApp() {
 			var defaultLocation = new google.maps.LatLng(41.5, -119.400);
 			var initialZoom = 14;
 			var defaultZoom = 5;
-			var browserSupportFlag = new Boolean();
 			var mapOptions = {
 				mapTypeId: google.maps.MapTypeId.ROADMAP,
 				mapTypeControl: false,
@@ -24,17 +22,15 @@ function initializeApp() {
 				fmMap.setZoom(defaultZoom);
 			}
 			if(navigator.geolocation) {
-				browserSupportFlag = true;
 				navigator.geolocation.getCurrentPosition(function(position) {
 					initialLocation = new google.maps.LatLng(position.coords.latitude,position.coords.longitude);
 					fmMap.setCenter(initialLocation);
 					fmMap.setZoom(initialZoom);
 				}, function() {
-					handleNoGeolocation(browserSupportFlag);
+					handleNoGeolocation();
 				});
 			} else {
-				browserSupportFlag = false;
-				handleNoGeolocation(browserSupportFlag);
+				handleNoGeolocation();
 			}
 
 			//Geocode user input
@@ -58,6 +54,23 @@ function initializeApp() {
 
 			//Flesh out UI with markers, info windows and market info
 			function generateUi(info, marketItems) {
+				var fmStreetAddress;
+				var fmCityState;
+				function reverseGeocode() {
+					if (info.lat) {
+						var geoGeocoder = new google.maps.Geocoder();
+						var geoLatLng = new google.maps.LatLng(info.lat,info.lng);
+						geoGeocoder.geocode({"latLng": geoLatLng}, function(results, status) {
+							if (status === google.maps.GeocoderStatus.OK) {
+								fmStreetAddress = results[0].formatted_address;
+								fmCityState = results[4].formatted_address;
+								console.log(fmStreetAddress);
+								console.log(fmCityState);
+							}
+						});
+					}
+				}
+				reverseGeocode();
 				var $marketDiv = $("<div>").append(info.market + "<br>" + info.city + ", " + info.state);
 				$marketDiv.attr("id", info.markerId);
 				$marketDiv.attr("class", "well");
@@ -203,7 +216,7 @@ function initializeApp() {
 									markerId: marketDivId,
 									market: market,
 									city: city,
-									state: state,
+									state: abrState,
 									street: street,
 									zip: zip,
 									abrState: abrState,
