@@ -195,16 +195,7 @@ function initializeApp() {
 							if (marketArr[i].properties.City !== undefined && marketArr[i].properties.State !== undefined) {
 								var marketIndex = marketArr[i];
 								var fMarket = new FarmerMarket(marketIndex);
-								var fId = fMarket.getId();
-								var fName = fMarket.getName();
-								var fCity = fMarket.getCity();
-								var fState = fMarket.getState();
-								var fStreet = fMarket.getStreet();
-								var fZip = fMarket.getZip();
-								var fLat = fMarket.getLat();
-								var fLng = fMarket.getLng();
 								var fItems = fMarket.getSpecialties();
-								var fWebsite = fMarket.getWebsite();
 								for (var key in fItems) {
 									if (fItems[key] === "1") {
 										fItems[key] = "" + key + "";
@@ -213,17 +204,17 @@ function initializeApp() {
 									}
 								}
 								var fUi = {
-									lat: fLat,
-									lng: fLng,
-									markerId: fId,
-									market: fName,
-									city: fCity,
-									state: fState,
-									street: fStreet,
-									zip: fZip,
-									website: fWebsite
+									lat: fMarket.getLat(),
+									lng: fMarket.getLng(),
+									markerId: fMarket.getId(),
+									market: fMarket.getName(),
+									city: fMarket.getCity(),
+									state: fMarket.getState(),
+									street: fMarket.getStreet(),
+									zip: fMarket.getZip(),
+									website: fMarket.getWebsite()
 								};
-								if (fLat) {
+								if (fMarket.getLat()) {
 									generateUi(fUi, fItems);
 								}
 							}
