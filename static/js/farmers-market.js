@@ -6,7 +6,7 @@ function initializeApp() {
 			//Initial map setup
 			var initialLocation;
 			var defaultLocation = new google.maps.LatLng(41.5, -119.400);
-			var initialZoom = 14;
+			var initialZoom = 12;
 			var defaultZoom = 5;
 			var mapOptions = {
 				mapTypeId: google.maps.MapTypeId.ROADMAP,
@@ -40,7 +40,7 @@ function initializeApp() {
 				geocoder.geocode( {"address": address}, function(results, status) {
 					if (status === google.maps.GeocoderStatus.OK) {
 						fmMap.setCenter(results[0].geometry.location);
-						fmMap.setZoom(14);
+						fmMap.setZoom(12);
 					} else {
 						alert("Oops -- We don't know where that is!");
 					}
@@ -52,14 +52,16 @@ function initializeApp() {
 				}
 			});
 
+
 			//Flesh out UI with markers, info windows and market info
 			function generateUi(info, marketItems) {
-				var fmStreetAddress;
+				/*var fmStreetAddress;
 				var fmCityState;
 				function reverseGeocode() {
 					if (info.lat) {
 						var geoGeocoder = new google.maps.Geocoder();
 						var geoLatLng = new google.maps.LatLng(info.lat,info.lng);
+						console.log(geoLatLng);
 						geoGeocoder.geocode({"latLng": geoLatLng}, function(results, status) {
 							if (status === google.maps.GeocoderStatus.OK) {
 								fmStreetAddress = results[0].formatted_address;
@@ -71,6 +73,26 @@ function initializeApp() {
 					}
 				}
 				reverseGeocode();
+
+				//generate flickr image
+				var $flickrImg;
+				function flickrPhotos(json) {
+					var photo = json.photos.photo[0];
+					$flickrImg = $("<img>");
+					var imgId = photo.id;
+					var secretId = photo.secret;
+					var farmId = photo.farm;
+					var serverId = photo.server;
+					$flickrImg.atrr("src", "http://farm" + farmID + ".staticflickr.com/" + serverId + "/" + imgId + "_" + secretId + "_s.jpg");
+					console.log($flickrImg.src);
+				}
+				function fetchFlickr(lat, lng) {
+					var $script = $("<script>");
+					$script.attr("src", "http://api.flickr.com/services/rest/?method=flickr.photos.search&api_key=013e5bbe996adcd69d3ac205794e8d92&lat=" + lat + "&lon=" + lng + "&tags=food&format=json&callback=flickrPhotos");
+					$script.appendTo("body");
+				}
+				fetchFlickr(info.lat,info.lng);*/
+
 				var $marketDiv = $("<div>").append(info.market + "<br>" + info.city + ", " + info.state);
 				$marketDiv.attr("id", info.markerId);
 				$marketDiv.attr("class", "well");
@@ -133,7 +155,7 @@ function initializeApp() {
 					if (website === "" || website === " ") {
 						website = "Unknown";
 					}
-					var windowContent = "<strong>" + info.market + "</strong>" + "<br>" + info.street + "<br>" + info.city + ", " + info.abrState + " " + info.zip + "<br><br><strong>Specialties:</strong> " + specialtiesStr + "<br><br><strong><a href='" + website + "' target='_blank'>Website</a></strong>";
+					var windowContent = "<strong>" + info.market + "</strong>" + "<br>" + info.street + "<br>" + info.city + ", " + info.state + " " + info.zip + "<br><br><strong>Specialties:</strong> " + specialtiesStr + "<br><br><strong><a href='" + website + "' target='_blank'>Website</a></strong>";
 					fmInfoWindow.setContent(windowContent);
 				}
 				infoWindowContent();
@@ -172,58 +194,37 @@ function initializeApp() {
 						if (marketArr[i].properties.State == "California" || marketArr[i].properties.State == "Oregon" || marketArr[i].properties.State == "Washington") {
 							if (marketArr[i].properties.City !== undefined && marketArr[i].properties.State !== undefined) {
 								var marketIndex = marketArr[i];
-								var market = marketIndex.properties.MarketName.toLowerCase().toTitleCase();
-								var city = marketIndex.properties.City.toLowerCase().toTitleCase();
-								var state = marketIndex.properties.State.toLowerCase().toTitleCase();
-								var stateMappings = {
-									"California": "CA",
-									"Washington": "WA",
-									"Oregon": "OR"
-								};
-								var abrState = stateMappings[state];
-								var street = marketIndex.properties.Street;
-								var zip = marketIndex.properties.Zip;
-								var lat = marketIndex.properties.y;
-								var lng = marketIndex.properties.x;
-								var marketDivId = marketIndex.properties._id;
-								var marketItems = {
-									jams: marketIndex.properties.Jams,
-									vegetables: marketIndex.properties.Vegetables,
-									soap: marketIndex.properties.Soap,
-									nuts: marketIndex.properties.Nuts,
-									cheese: marketIndex.properties.Cheese,
-									seafood: marketIndex.properties.Seafood,
-									fruit: marketIndex.properties,
-									herbs: marketIndex.properties.Herbs,
-									honey: marketIndex.properties.Honey,
-									flowers: marketIndex.properties.Flowers,
-									bakedGoods: marketIndex.properties.Bakedgoods,
-									crafts: marketIndex.properties.Crafts,
-									meat: marketIndex.properties.Meats,
-									plants: marketIndex.properties.Plants
-								};
-								var website = marketIndex.properties.Website;
-								for (key in marketItems) {
-									if (marketItems[key] === "1") {
-										marketItems[key] = "" + key + "";
+								var fMarket = new FarmerMarket(marketIndex);
+								var fId = fMarket.getId();
+								var fName = fMarket.getName();
+								var fCity = fMarket.getCity();
+								var fState = fMarket.getState();
+								var fStreet = fMarket.getStreet();
+								var fZip = fMarket.getZip();
+								var fLat = fMarket.getLat();
+								var fLng = fMarket.getLng();
+								var fItems = fMarket.getSpecialties();
+								var fWebsite = fMarket.getWebsite();
+								for (var key in fItems) {
+									if (fItems[key] === "1") {
+										fItems[key] = "" + key + "";
 									} else {
-										marketItems[key] = "";
+										fItems[key] = "";
 									}
 								}
-								var uiObject = {
-									lat: lat,
-									lng: lng,
-									markerId: marketDivId,
-									market: market,
-									city: city,
-									state: abrState,
-									street: street,
-									zip: zip,
-									abrState: abrState,
-									website: website
+								var fUi = {
+									lat: fLat,
+									lng: fLng,
+									markerId: fId,
+									market: fName,
+									city: fCity,
+									state: fState,
+									street: fStreet,
+									zip: fZip,
+									website: fWebsite
 								};
-								if (lat) {
-									generateUi(uiObject, marketItems);
+								if (fLat) {
+									generateUi(fUi, fItems);
 								}
 							}
 						}

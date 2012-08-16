@@ -12,13 +12,16 @@ class MainPage(webapp.RequestHandler):
         if users.get_current_user():
             url = users.create_logout_url(self.request.uri)
             url_linktext = 'Logout'
+            nickname = users.get_current_user().nickname()
         else:
             url = users.create_login_url(self.request.uri)
             url_linktext = 'Login'
+            nickname = ''
 
         template_values = {
           'url': url,
           'url_linktext': url_linktext,
+          'nickname': nickname
           }
 
         path = os.path.join(os.path.dirname(__file__), 'templates/index.html')
