@@ -1,28 +1,28 @@
 function FarmerMarket(marketInfo) {
-	this.id = marketInfo.properties._id;
-	this.name = marketInfo.properties.MarketName;
-	this.city = marketInfo.properties.City;
-	this.state = marketInfo.properties.State;
-	this.street = marketInfo.properties.Street;
-	this.zip = marketInfo.properties.Zip;
-	this.lat = marketInfo.properties.y;
-	this.lng = marketInfo.properties.x;
-	this.website = marketInfo.properties.Website;
+	this.id = marketInfo._id;
+	this.name = marketInfo.MarketName;
+	this.city = marketInfo.City;
+	this.state = marketInfo.State;
+	this.street = marketInfo.Street;
+	this.zip = marketInfo.Zip;
+	this.lat = marketInfo.y;
+	this.lng = marketInfo.x;
+	this.website = marketInfo.Website;
 	this.specialties = {
-		jams: marketInfo.properties.Jams,
-		vegetables: marketInfo.properties.Vegetables,
-		soap: marketInfo.properties.Soap,
-		nuts: marketInfo.properties.Nuts,
-		cheese: marketInfo.properties.Cheese,
-		seafood: marketInfo.properties.Seafood,
-		fruit: marketInfo.properties,
-		herbs: marketInfo.properties.Herbs,
-		honey: marketInfo.properties.Honey,
-		flowers: marketInfo.properties.Flowers,
-		bakedGoods: marketInfo.properties.Bakedgoods,
-		crafts: marketInfo.properties.Crafts,
-		meat: marketInfo.properties.Meats,
-		plants: marketInfo.properties.Plants
+		jams: marketInfo.Jams,
+		vegetables: marketInfo.Vegetables,
+		soap: marketInfo.Soap,
+		nuts: marketInfo.Nuts,
+		cheese: marketInfo.Cheese,
+		seafood: marketInfo.Seafood,
+		fruit: marketInfo.Fruit,
+		herbs: marketInfo.Herbs,
+		honey: marketInfo.Honey,
+		flowers: marketInfo.Flowers,
+		bakedGoods: marketInfo.Bakedgoods,
+		crafts: marketInfo.Crafts,
+		meat: marketInfo.Meats,
+		plants: marketInfo.Plants
 	};
 }
 
@@ -81,5 +81,22 @@ FarmerMarket.prototype.getWebsite = function() {
 };
 
 FarmerMarket.prototype.getSpecialties = function() {
+	for (var item in this.specialties) {
+		if (this.specialties[item] === "1") {
+			this.specialties[item] = "" + item.toLowerCase().toTitleCase() + "";
+			if (this.specialties[item] === "Bakedgoods") {
+				this.specialties[item] = "Baked Goods";
+			}
+		} else {
+			this.specialties[item] = "";
+		}
+	}
 	return this.specialties;
 };
+
+function FlickrPhoto(json) {
+	this.id = json.photos.photo[0].id;
+	this.secret = json.photos.photo[0].secret;
+	this.farm = json.photos.photo[0].farm.toString();
+	this.server = json.photos.photo[0].server;
+}

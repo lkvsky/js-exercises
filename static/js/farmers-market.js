@@ -1,6 +1,8 @@
 function initializeApp() {
 			//Hide loading text and display header
 			$("#loading").hide();
+			$("#side-bar").hide();
+			$("#fixed-canvas").attr("style", "width: 97%;");
 			$("#fm-container").show();
 
 			//Initial map setup
@@ -23,6 +25,8 @@ function initializeApp() {
 			}
 			if(navigator.geolocation) {
 				navigator.geolocation.getCurrentPosition(function(position) {
+					$("#fixed-canvas").attr("style", "width: 60%;");
+					$("#side-bar").show();
 					initialLocation = new google.maps.LatLng(position.coords.latitude,position.coords.longitude);
 					fmMap.setCenter(initialLocation);
 					fmMap.setZoom(initialZoom);
@@ -35,6 +39,8 @@ function initializeApp() {
 
 			//Geocode user input
 			function codeAddress() {
+				$("#fixed-canvas").attr("style", "width: 60%;");
+				$("#side-bar").show();
 				var address = $("#search-map-input").val();
 				var newMarkerOptions = google.maps.MarkerOptions;
 				geocoder.geocode( {"address": address}, function(results, status) {
@@ -48,59 +54,18 @@ function initializeApp() {
 			}
 			$("#search-map-input").keypress(function(e) {
 				if(e.keyCode === 13) {
+					$("#side-bar").show();
+					$("#fixed-canvas").attr("style", "width: 60%;");
 					codeAddress();
 				}
 			});
 
 
 			//Flesh out UI with markers, info windows and market info
-			function generateUi(info, marketItems) {
-				/*var fmStreetAddress;
-				var fmCityState;
-				function reverseGeocode() {
-					if (info.lat) {
-						var geoGeocoder = new google.maps.Geocoder();
-						var geoLatLng = new google.maps.LatLng(info.lat,info.lng);
-						console.log(geoLatLng);
-						geoGeocoder.geocode({"latLng": geoLatLng}, function(results, status) {
-							if (status === google.maps.GeocoderStatus.OK) {
-								fmStreetAddress = results[0].formatted_address;
-								fmCityState = results[4].formatted_address;
-								console.log(fmStreetAddress);
-								console.log(fmCityState);
-							}
-						});
-					}
-				}
-				reverseGeocode();
-
-				//generate flickr image
-				var $flickrImg;
-				function flickrPhotos(json) {
-					var photo = json.photos.photo[0];
-					$flickrImg = $("<img>");
-					var imgId = photo.id;
-					var secretId = photo.secret;
-					var farmId = photo.farm;
-					var serverId = photo.server;
-					$flickrImg.atrr("src", "http://farm" + farmID + ".staticflickr.com/" + serverId + "/" + imgId + "_" + secretId + "_s.jpg");
-					console.log($flickrImg.src);
-				}
-				function fetchFlickr(lat, lng) {
-					var $script = $("<script>");
-					$script.attr("src", "http://api.flickr.com/services/rest/?method=flickr.photos.search&api_key=013e5bbe996adcd69d3ac205794e8d92&lat=" + lat + "&lon=" + lng + "&tags=food&format=json&callback=flickrPhotos");
-					$script.appendTo("body");
-				}
-				fetchFlickr(info.lat,info.lng);*/
-
+			function generateUi(info) {
 				var $marketDiv = $("<div>").append(info.market + "<br>" + info.city + ", " + info.state);
 				$marketDiv.attr("id", info.markerId);
 				$marketDiv.attr("class", "well");
-				$marketDiv.attr("data-market", info.market);
-				$marketDiv.attr("data-state", info.state);
-				$marketDiv.attr("data-city", info.city);
-				$marketDiv.attr("data-lat", info.lat);
-				$marketDiv.attr("data-lng", info.lng);
 				$("#farmers-markets").append($marketDiv);
 				var fmLatLng = new google.maps.LatLng(info.lat,info.lng);
 				var fmMarker = new google.maps.Marker({
@@ -110,7 +75,7 @@ function initializeApp() {
 				fmMarker.setMap(fmMap);
 				var fmInfoWindow = new google.maps.InfoWindow({
 				});
-				fmInfoWindow.maxWidth = 250;
+				fmInfoWindow.maxWidth = 300;
 				fmMarker.setVisible(false);
 				$marketDiv.hide();
 
@@ -133,35 +98,48 @@ function initializeApp() {
 				//setting info window content
 				function infoWindowContent() {
 					var specialties = [];
-					var specialtiesTitleCased = [];
 					var specialtiesStr;
-					for (var key in marketItems) {
-						if (marketItems[key] !== "" && marketItems[key] !== undefined) {
-							specialties.push(marketItems[key]);
+					for (var key in info.items) {
+						if (info.items[key] !== "") {
+							specialties.push(info.items[key]);
 						}
 					}
-					for (var i = 0; i < specialties.length; i++) {
-						var word = specialties[i].toLowerCase().toTitleCase();
-						if (word === "Bakedgoods") {
-							word = "Baked Goods";
-						}
-						specialtiesTitleCased.push(word);
-					}
-					specialtiesStr = specialtiesTitleCased.join(", ");
+					specialtiesStr = specialties.join(", ");
 					if (specialtiesStr === "") {
 						specialtiesStr = "Unknown";
 					}
-					var website = info.website;
-					if (website === "" || website === " ") {
-						website = "Unknown";
-					}
-					var windowContent = "<strong>" + info.market + "</strong>" + "<br>" + info.street + "<br>" + info.city + ", " + info.state + " " + info.zip + "<br><br><strong>Specialties:</strong> " + specialtiesStr + "<br><br><strong><a href='" + website + "' target='_blank'>Website</a></strong>";
+					var windowContent = "<div><strong>" + info.market + "</strong>" + "<br>" + info.street + "<br>" + info.city + ", " + info.state + " " + info.zip + "<br><br><strong>Specialties:</strong> " + specialtiesStr + "<br><br><strong><a href='" + info.website + "' target='_blank'>Website</a></strong><div>";
 					fmInfoWindow.setContent(windowContent);
+					$.ajax({
+						url: "http://api.flickr.com/services/rest/",
+						data: {
+							api_key: "013e5bbe996adcd69d3ac205794e8d92",
+							method: "flickr.photos.search",
+							tags: "farmersmarket",
+							lat: info.lat,
+							lon: info.lng,
+							format: "json"
+						},
+						dataType: "jsonp",
+						jsonp: "jsoncallback",
+						success: function(json) {
+							if (json.photos.photo[0]){
+								var imgObj = new FlickrPhoto(json);
+								$flickrImg = $("<img>");
+								$flickrImg.attr("src", "http://farm" + imgObj.farm + ".staticflickr.com/" + imgObj.server + "/" + imgObj.id + "_" + imgObj.secret + "_m.jpg");
+								windowContent += "<br><br><div>" + $flickrImg[0] + "</div>";
+								fmInfoWindow.setContent(windowContent);
+							} else {
+								return;
+							}
+						}
+					});
 				}
-				infoWindowContent();
+				
 
 				//Listeners to invoke info windows
 				function openInfoWindow() {
+					infoWindowContent();
 					$("#farmers-markets div").removeClass("selected");
 					$marketDiv.addClass("selected");
 					fmInfoWindow.open(fmMap,fmMarker);
@@ -193,16 +171,8 @@ function initializeApp() {
 					for (i = 0; i < marketArr.length; i++) {
 						if (marketArr[i].properties.State == "California" || marketArr[i].properties.State == "Oregon" || marketArr[i].properties.State == "Washington") {
 							if (marketArr[i].properties.City !== undefined && marketArr[i].properties.State !== undefined) {
-								var marketIndex = marketArr[i];
-								var fMarket = new FarmerMarket(marketIndex);
-								var fItems = fMarket.getSpecialties();
-								for (var key in fItems) {
-									if (fItems[key] === "1") {
-										fItems[key] = "" + key + "";
-									} else {
-										fItems[key] = "";
-									}
-								}
+								var marketObj = marketArr[i].properties;
+								var fMarket = new FarmerMarket(marketObj);
 								var fUi = {
 									lat: fMarket.getLat(),
 									lng: fMarket.getLng(),
@@ -212,10 +182,11 @@ function initializeApp() {
 									state: fMarket.getState(),
 									street: fMarket.getStreet(),
 									zip: fMarket.getZip(),
-									website: fMarket.getWebsite()
+									website: fMarket.getWebsite(),
+									items: fMarket.getSpecialties()
 								};
 								if (fMarket.getLat()) {
-									generateUi(fUi, fItems);
+									generateUi(fUi);
 								}
 							}
 						}
