@@ -1,8 +1,8 @@
 function FarmerMarket(marketInfo) {
 	this.id = marketInfo._id;
-	this.name = marketInfo.MarketName;
-	this.city = marketInfo.City;
-	this.state = marketInfo.State;
+	this.name = marketInfo.MarketName.toLowerCase().toTitleCase();
+	this.city = marketInfo.City.toLowerCase().toTitleCase();
+	this.state = marketInfo.State.toLowerCase();
 	this.street = marketInfo.Street;
 	this.zip = marketInfo.Zip;
 	this.lat = marketInfo.y;
@@ -31,11 +31,11 @@ FarmerMarket.prototype.getId = function() {
 };
 
 FarmerMarket.prototype.getName = function() {
-	return this.name.toLowerCase().toTitleCase();
+	return this.name;
 };
 
 FarmerMarket.prototype.getCity = function() {
-	return this.city.toLowerCase().toTitleCase();
+	return this.city;
 };
 
 FarmerMarket.prototype.getStreet = function() {
@@ -43,7 +43,7 @@ FarmerMarket.prototype.getStreet = function() {
 };
 
 FarmerMarket.prototype.getState = function() {
-	var longState = this.state.toLowerCase();
+	var longState = this.state;
 	var mapping = {
 		"california": "CA",
 		"oregon": "OR",
@@ -94,9 +94,9 @@ FarmerMarket.prototype.getSpecialties = function() {
 	return this.specialties;
 };
 
-function FlickrPhoto(json) {
-	this.id = json.photos.photo[0].id;
-	this.secret = json.photos.photo[0].secret;
-	this.farm = json.photos.photo[0].farm.toString();
-	this.server = json.photos.photo[0].server;
+function FlickrPhoto(json, i) {
+	this.id = json.photos.photo[i].id;
+	this.secret = json.photos.photo[i].secret;
+	this.farm = json.photos.photo[i].farm.toString();
+	this.server = json.photos.photo[i].server;
 }

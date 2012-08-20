@@ -1,13 +1,15 @@
 import os
+import webapp2
+import jinja2
 
 from google.appengine.api import users
-from google.appengine.ext import webapp
-from google.appengine.ext.webapp.util import run_wsgi_app
-from google.appengine.ext.webapp import template
 from google.appengine.ext import db
 
+jinja_environment = jinja2.Environment(
+    loader=jinja2.FileSystemLoader(os.path.dirname(__file__)))
 
-class MainPage(webapp.RequestHandler):
+
+class MainPage(webapp2.RequestHandler):
     def get(self):
         if users.get_current_user():
             url = users.create_logout_url(self.request.uri)
@@ -24,8 +26,8 @@ class MainPage(webapp.RequestHandler):
           'nickname': nickname
           }
 
-        path = os.path.join(os.path.dirname(__file__), 'templates/index.html')
-        self.response.out.write(template.render(path, template_values))
+        template = jinja_environment.get_template('templates/index.html')
+        self.response.out.write(template.render(template_values))
 
 
 class Market(db.Model):
@@ -56,13 +58,4 @@ class ShoppingList(db.Model):
     vendor = db.StringProperty()
 
 
-application = webapp.WSGIApplication(
-                                     [('/', MainPage)],
-                                     debug=True)
-
-
-def main():
-    run_wsgi_app(application)
-
-if __name__ == "__main__":
-    main()
+app = webapp2.WSGIApplication([('/', MainPage)],  debug=True)

@@ -1,11 +1,11 @@
 function initializeApp() {
-			//Hide loading text and display header
+			//Hide loading text, set up default view
 			$("#loading").hide();
 			$("#side-bar").hide();
 			$("#fixed-canvas").attr("style", "width: 97%;");
 			$("#fm-container").show();
 
-			//Initial map setup
+			//Setup map and check user's location
 			var initialLocation;
 			var defaultLocation = new google.maps.LatLng(41.5, -119.400);
 			var initialZoom = 12;
@@ -17,8 +17,19 @@ function initializeApp() {
 			};
 			var fmMap = new google.maps.Map(document.getElementById("map-canvas"), mapOptions);
 			var geocoder = new google.maps.Geocoder();
+			var fmInfoWindow = new google.maps.InfoWindow();
+			fmInfoWindow.maxWidth = 300;
 
-			//Check the user's location
+			function locationErrorCheck() {
+				if ($("#farmers-markets div").filter(":visible").length === 0) {
+					$("#market-error").show();
+					console.log("error should show");
+				} else {
+					$("#market-error").hide();
+					console.log("error should not show");
+				}
+			}
+
 			function handleNoGeolocation() {
 				fmMap.setCenter(defaultLocation);
 				fmMap.setZoom(defaultZoom);
@@ -37,7 +48,7 @@ function initializeApp() {
 				handleNoGeolocation();
 			}
 
-			//Geocode user input
+			//Search map based on user's input
 			function codeAddress() {
 				$("#fixed-canvas").attr("style", "width: 60%;");
 				$("#side-bar").show();
@@ -60,8 +71,7 @@ function initializeApp() {
 				}
 			});
 
-
-			//Flesh out UI with markers, info windows and market info
+			//Generate sidebar, map markers, info window content, listeners
 			function generateUi(info) {
 				var $marketDiv = $("<div>").append(info.market + "<br>" + info.city + ", " + info.state);
 				$marketDiv.attr("id", info.markerId);
@@ -73,9 +83,6 @@ function initializeApp() {
 					title: info.markerId
 				});
 				fmMarker.setMap(fmMap);
-				var fmInfoWindow = new google.maps.InfoWindow({
-				});
-				fmInfoWindow.maxWidth = 300;
 				fmMarker.setVisible(false);
 				$marketDiv.hide();
 
@@ -96,7 +103,7 @@ function initializeApp() {
 				visibleMarkers();
 
 				//setting info window content
-				function infoWindowContent() {
+				function setInfoWindowContent() {
 					var specialties = [];
 					var specialtiesStr;
 					for (var key in info.items) {
@@ -108,7 +115,10 @@ function initializeApp() {
 					if (specialtiesStr === "") {
 						specialtiesStr = "Unknown";
 					}
-					var windowContent = "<div><strong>" + info.market + "</strong>" + "<br>" + info.street + "<br>" + info.city + ", " + info.state + " " + info.zip + "<br><br><strong>Specialties:</strong> " + specialtiesStr + "<br><br><strong><a href='" + info.website + "' target='_blank'>Website</a></strong><div>";
+					var source = $("#info-window-template").html();
+					var template = Handlebars.compile(source);
+					var windowContent = template({info: info, specialties: specialtiesStr});
+					console.log(source);
 					fmInfoWindow.setContent(windowContent);
 					$.ajax({
 						url: "http://api.flickr.com/services/rest/",
@@ -124,10 +134,13 @@ function initializeApp() {
 						jsonp: "jsoncallback",
 						success: function(json) {
 							if (json.photos.photo[0]){
-								var imgObj = new FlickrPhoto(json);
-								$flickrImg = $("<img>");
-								$flickrImg.attr("src", "http://farm" + imgObj.farm + ".staticflickr.com/" + imgObj.server + "/" + imgObj.id + "_" + imgObj.secret + "_m.jpg");
-								windowContent += "<br><br><div>" + $flickrImg[0] + "</div>";
+								var imgObj1 = new FlickrPhoto(json, 0);
+								var imgUrl1 = "http://farm" + imgObj1.farm + ".staticflickr.com/" + imgObj1.server + "/" + imgObj1.id + "_" + imgObj1.secret + "_s.jpg";
+								var imgObj2 = new FlickrPhoto(json, 1);
+								var imgUrl2 = "http://farm" + imgObj2.farm + ".staticflickr.com/" + imgObj2.server + "/" + imgObj2.id + "_" + imgObj2.secret + "_s.jpg";
+								var imgObj3 = new FlickrPhoto(json, 2);
+								var imgUrl3 = "http://farm" + imgObj3.farm + ".staticflickr.com/" + imgObj3.server + "/" + imgObj3.id + "_" + imgObj3.secret + "_s.jpg";
+								windowContent += "<img src='" + imgUrl1 + "'><img src='" + imgUrl2 + "'><img src='" + imgUrl3 + "'>";
 								fmInfoWindow.setContent(windowContent);
 							} else {
 								return;
@@ -135,21 +148,26 @@ function initializeApp() {
 						}
 					});
 				}
-				
 
-				//Listeners to invoke info windows
+				//invoke info window
 				function openInfoWindow() {
-					infoWindowContent();
+					var markerPosition = fmMarker.getPosition();
+					fmInfoWindow.setPosition(markerPosition);
+					setInfoWindowContent();
 					$("#farmers-markets div").removeClass("selected");
 					$marketDiv.addClass("selected");
 					fmInfoWindow.open(fmMap,fmMarker);
 				}
+
+				//marker and map listeners
 				google.maps.event.addListener(fmMarker, "click", openInfoWindow);
 				google.maps.event.addDomListener($marketDiv[0], "click", openInfoWindow);
 				google.maps.event.addListener(fmInfoWindow, "closeclick", function() {
-					$("#farmers-markets div").removeClass("selected");
+					$($marketDiv).removeClass("selected");
 				});
-				google.maps.event.addListener(fmMap, "bounds_changed", visibleMarkers);
+				google.maps.event.addListener(fmMap, "bounds_changed", function() {
+					visibleMarkers();
+				});
 			}
 		
 			//Loads all farmer's market data and populates map accordingly
@@ -168,10 +186,10 @@ function initializeApp() {
 				function processData(json) {
 					var marketArr = json.features;
 					var i;
-					for (i = 0; i < marketArr.length; i++) {
-						if (marketArr[i].properties.State == "California" || marketArr[i].properties.State == "Oregon" || marketArr[i].properties.State == "Washington") {
-							if (marketArr[i].properties.City !== undefined && marketArr[i].properties.State !== undefined) {
-								var marketObj = marketArr[i].properties;
+					$(marketArr).each(function() {
+						if (this.properties.State == "California" || this.properties.State == "Oregon" || this.properties.State == "Washington") {
+							if (this.properties.City !== undefined && this.properties.State !== undefined) {
+								var marketObj = this.properties;
 								var fMarket = new FarmerMarket(marketObj);
 								var fUi = {
 									lat: fMarket.getLat(),
@@ -190,7 +208,7 @@ function initializeApp() {
 								}
 							}
 						}
-					}
+					});
 				}
 
 				//Ajax call to fetch data

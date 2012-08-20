@@ -26,15 +26,32 @@
 		</div>
 		<div id="fm-container" style="display: none;">
 			<div id="side-bar">
-				<div id="market-info">
-					<section id="farmers-markets">
-					</section>
+				<img id="market-error" src="/static/img/best-coast-error.jpeg" style="height: 87%; display: none;"></img>
+				<div id="farmers-markets">
 				</div>
 			</div>
 			<div id="fixed-canvas">
 				<div id="map-canvas"></div>
 			</div>
 		</div>
+		{% raw %}
+		<script id="info-window-template" type="text/x-handlebars-template">
+			<div>
+				<strong>{{ info.market }}</strong>
+				<br>
+				{{ info.street }}
+				<br>
+				{{ info.city }}, {{ info.state }} {{ info.zip }}
+				<br><br>
+				<strong>Specialties: </strong>
+				{{ specialties }}
+				<br><br>
+				<strong>
+					<a href="{{ info.website }}" target="_blank">Website</a></strong>
+			</div>
+		</script>
+		{% endraw %}
+		<script src="static/js/lib/handlebars.js"></script>
 		<script src="static/js/lib/to-title-case.js"></script>
 		<script src="http://code.jquery.com/jquery-1.7.2.min.js"></script>
 		<script src="static/js/lib/lscache.js"></script>
