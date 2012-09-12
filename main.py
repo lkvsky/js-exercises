@@ -30,32 +30,4 @@ class MainPage(webapp2.RequestHandler):
         self.response.out.write(template.render(template_values))
 
 
-class Market(db.Model):
-    marketname = db.StringProperty()
-    streetaddress = db.StringProperty()
-    city = db.StringProperty()
-    state = db.StringProperty()
-    latitude = db.FloatProperty()
-    longitude = db.FloatProperty()
-    specialties = db.ReferenceProperty()
-
-
-class Shopper(db.Model):
-    firstname = db.StringProperty()
-    lastname = db.StringProperty()
-    email = db.EmailProperty()
-    visitedmarkets = db.ReferenceProperty()
-
-
-class VisitedMarket(db.Model):
-    rating = db.IntegerProperty()
-    shoppinglist = db.ReferenceProperty()
-
-
-class ShoppingList(db.Model):
-    quantity = db.IntegerProperty()
-    item = db.StringProperty()
-    vendor = db.StringProperty()
-
-
 app = webapp2.WSGIApplication([('/', MainPage)],  debug=True)

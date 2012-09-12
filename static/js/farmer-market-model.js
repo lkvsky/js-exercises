@@ -94,9 +94,9 @@ FarmerMarket.prototype.getSpecialties = function() {
 	return this.specialties;
 };
 
-function FlickrPhoto(json, i) {
-	this.id = json.photos.photo[i].id;
-	this.secret = json.photos.photo[i].secret;
-	this.farm = json.photos.photo[i].farm.toString();
-	this.server = json.photos.photo[i].server;
+function FlickrPhoto(json, index) {
+	this.id = json.photos.photo[index].id;
+	this.secret = json.photos.photo[index].secret;
+	this.farm = json.photos.photo[index].farm.toString();
+	this.server = json.photos.photo[index].server;
 }

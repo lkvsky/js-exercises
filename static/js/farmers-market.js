@@ -18,15 +18,17 @@ function initializeApp() {
 			var fmMap = new google.maps.Map(document.getElementById("map-canvas"), mapOptions);
 			var geocoder = new google.maps.Geocoder();
 			var fmInfoWindow = new google.maps.InfoWindow();
-			fmInfoWindow.maxWidth = 300;
+			fmInfoWindow.maxWidth = 250;
 
-			function locationErrorCheck() {
-				if ($("#farmers-markets div").filter(":visible").length === 0) {
-					$("#market-error").show();
-					console.log("error should show");
+			function locationErrorCheck(flag) {
+				if (flag === true) {
+					if ($("#farmers-markets div").filter(":visible").length === 0) {
+						$("#market-error").show();
+					} else {
+						$("#market-error").hide();
+					}
 				} else {
-					$("#market-error").hide();
-					console.log("error should not show");
+					return;
 				}
 			}
 
@@ -36,11 +38,14 @@ function initializeApp() {
 			}
 			if(navigator.geolocation) {
 				navigator.geolocation.getCurrentPosition(function(position) {
+					var finished;
 					$("#fixed-canvas").attr("style", "width: 60%;");
 					$("#side-bar").show();
 					initialLocation = new google.maps.LatLng(position.coords.latitude,position.coords.longitude);
 					fmMap.setCenter(initialLocation);
 					fmMap.setZoom(initialZoom);
+					var vinished = true;
+					locationErrorCheck(finished);
 				}, function() {
 					handleNoGeolocation();
 				});
@@ -50,6 +55,7 @@ function initializeApp() {
 
 			//Search map based on user's input
 			function codeAddress() {
+				var finished;
 				$("#fixed-canvas").attr("style", "width: 60%;");
 				$("#side-bar").show();
 				var address = $("#search-map-input").val();
@@ -62,6 +68,8 @@ function initializeApp() {
 						alert("Oops -- We don't know where that is!");
 					}
 				});
+				finished = true;
+				locationErrorCheck(finished);
 			}
 			$("#search-map-input").keypress(function(e) {
 				if(e.keyCode === 13) {
@@ -118,7 +126,6 @@ function initializeApp() {
 					var source = $("#info-window-template").html();
 					var template = Handlebars.compile(source);
 					var windowContent = template({info: info, specialties: specialtiesStr});
-					console.log(source);
 					fmInfoWindow.setContent(windowContent);
 					$.ajax({
 						url: "http://api.flickr.com/services/rest/",
@@ -140,7 +147,7 @@ function initializeApp() {
 								var imgUrl2 = "http://farm" + imgObj2.farm + ".staticflickr.com/" + imgObj2.server + "/" + imgObj2.id + "_" + imgObj2.secret + "_s.jpg";
 								var imgObj3 = new FlickrPhoto(json, 2);
 								var imgUrl3 = "http://farm" + imgObj3.farm + ".staticflickr.com/" + imgObj3.server + "/" + imgObj3.id + "_" + imgObj3.secret + "_s.jpg";
-								windowContent += "<img src='" + imgUrl1 + "'><img src='" + imgUrl2 + "'><img src='" + imgUrl3 + "'>";
+								windowContent += "<img src='" + imgUrl1 + "'> <img src='" + imgUrl2 + "'> <img src='" + imgUrl3 + "'>";
 								fmInfoWindow.setContent(windowContent);
 							} else {
 								return;
