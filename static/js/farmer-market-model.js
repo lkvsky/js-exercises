@@ -73,8 +73,10 @@ FarmerMarket.prototype.getLng = function() {
 };
 
 FarmerMarket.prototype.getWebsite = function() {
-	if (this.website === "" || this.website === " ") {
+	if (this.website === "" || this.website === " " || this.website === undefined) {
 		return "Unknown";
+	} else if (this.website !== undefined && this.website.indexOf("http://") === -1) {
+		return "http://" + this.website;
 	} else {
 		return this.website;
 	}

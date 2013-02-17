@@ -1,8 +1,5 @@
 function initializeApp() {
-			//Hide loading text, set up default view
 			$("#loading").hide();
-			$("#side-bar").hide();
-			$("#fixed-canvas").attr("style", "width: 97%;");
 			$("#fm-container").show();
 
 			//Setup map and check user's location
@@ -18,17 +15,13 @@ function initializeApp() {
 			var fmMap = new google.maps.Map(document.getElementById("map-canvas"), mapOptions);
 			var geocoder = new google.maps.Geocoder();
 			var fmInfoWindow = new google.maps.InfoWindow();
-			fmInfoWindow.maxWidth = 250;
+			fmInfoWindow.setOptions({maxWidth: 260});
 
-			function locationErrorCheck(flag) {
-				if (flag === true) {
-					if ($("#farmers-markets div").filter(":visible").length === 0) {
-						$("#market-error").show();
-					} else {
-						$("#market-error").hide();
-					}
+			function locationErrorCheck() {
+				if ($("#farmers-markets div").filter(":visible").length === 0) {
+					$("#market-error").show();
 				} else {
-					return;
+					$("#market-error").hide();
 				}
 			}
 
@@ -38,14 +31,9 @@ function initializeApp() {
 			}
 			if(navigator.geolocation) {
 				navigator.geolocation.getCurrentPosition(function(position) {
-					var finished;
-					$("#fixed-canvas").attr("style", "width: 60%;");
-					$("#side-bar").show();
 					initialLocation = new google.maps.LatLng(position.coords.latitude,position.coords.longitude);
 					fmMap.setCenter(initialLocation);
 					fmMap.setZoom(initialZoom);
-					var vinished = true;
-					locationErrorCheck(finished);
 				}, function() {
 					handleNoGeolocation();
 				});
@@ -56,8 +44,6 @@ function initializeApp() {
 			//Search map based on user's input
 			function codeAddress() {
 				var finished;
-				$("#fixed-canvas").attr("style", "width: 60%;");
-				$("#side-bar").show();
 				var address = $("#search-map-input").val();
 				var newMarkerOptions = google.maps.MarkerOptions;
 				geocoder.geocode( {"address": address}, function(results, status) {
@@ -68,13 +54,10 @@ function initializeApp() {
 						alert("Oops -- We don't know where that is!");
 					}
 				});
-				finished = true;
-				locationErrorCheck(finished);
 			}
+
 			$("#search-map-input").keypress(function(e) {
 				if(e.keyCode === 13) {
-					$("#side-bar").show();
-					$("#fixed-canvas").attr("style", "width: 60%;");
 					codeAddress();
 				}
 			});

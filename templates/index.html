@@ -1,3 +1,4 @@
+<!DOCTYPE html>
 <html>
 	<head>
 		<meta charset="UTF-8">
@@ -6,32 +7,29 @@
 		<link rel="stylesheet" type="text/css" href="static/css/farmers-market.css"></style>
 	</head>
 	<body>
-		<div class="navbar navbar-fixed-top">
-				<div class="navbar-inner">
-					<div class="container">
-						<a class="brand" href="#">
-							Best Coast Eats Local
-						</a>
-						<div class="navbar-search pull-left">
-							<input id="search-map-input" type="text" class="search-query" placeholder="Search">
-						</div>
-						<div class="navbar-text pull-right">
-							Hello {{ nickname }} | <a href="{{ url }}">{{ url_linktext }}</a>
+		<div class="container">
+			<div class="navbar navbar-fixed-top">
+					<div class="navbar-inner">
+						<div id="navbar-content">
+							<a class="brand" href="#">
+								Best Coast Eats Local
+							</a>
+							<div class="navbar-search pull-left">
+								<input id="search-map-input" type="text" class="search-query" placeholder="Search for your town">
+							</div>
 						</div>
 					</div>
 				</div>
+			<div id="loading">
+				Loading...
 			</div>
-		<div id="loading">
-			Loading...
-		</div>
-		<div id="fm-container" style="display: none;">
-			<div id="side-bar">
-				<img id="market-error" src="/static/img/best-coast-error.jpeg" style="height: 87%; display: none;"></img>
+			<div id="fm-container">
 				<div id="farmers-markets">
+					<img id="market-error" src="/static/img/best-coast-error.jpeg">
 				</div>
-			</div>
-			<div id="fixed-canvas">
-				<div id="map-canvas"></div>
+				<div id="fixed-canvas">
+					<div id="map-canvas"></div>
+				</div>
 			</div>
 		</div>
 		{% raw %}
