@@ -1,6 +1,5 @@
 .container {
 	width: 100%;
-	min-width: 350px;
 }
 #navbar-content {
 	padding-bottom: 20px;
@@ -54,7 +53,7 @@
 	display:none;
 }
 
-@media only screen and (max-width: 860px) and (-webkit-min-device-pixel-ratio: 2) {
+@media only screen and (max-width: 860px) {
 	#fixed-canvas {
 		width: 95%;
 		height: 400px;
@@ -69,5 +68,27 @@
 		margin-right: 10px;
 		width: 100%;
 		text-align: center;
+	}
+}
+
+@media only screen and (max-width: 450px), (max-device-width: 450px) {
+	#fixed-canvas {
+		height: 100%;
+		width: 100%;
+		top: 0px;
+		left: 0px;
+		z-index: -1;
+	}
+
+	#farmers-markets {
+		display: none;
+	}
+
+	#search-map-input {
+		margin-left: 10%;
+	}
+
+	#navbar-content .brand {
+		display: none;
 	}
 }

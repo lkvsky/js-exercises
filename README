@@ -1,3 +1,4 @@
-Repo contains a series of JavaScript exercises.
+Best Coast Eats Local:
 
-js-data-visualization.html uses Farmer's Market API found at http://codeforamerica.org/2011/08/08/farmers-market-api/
+This app uses a farmer's market API found at http://codeforamerica.org/2011/08/08/farmers-market-api/,
+visualizing them on a google map.

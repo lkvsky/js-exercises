@@ -16,15 +16,7 @@ function initializeApp() {
 			var geocoder = new google.maps.Geocoder();
 			var fmInfoWindow = new google.maps.InfoWindow();
 			fmInfoWindow.setOptions({maxWidth: 260});
-
-			function locationErrorCheck() {
-				if ($("#farmers-markets div").filter(":visible").length === 0) {
-					$("#market-error").show();
-				} else {
-					$("#market-error").hide();
-				}
-			}
-
+	
 			function handleNoGeolocation() {
 				fmMap.setCenter(defaultLocation);
 				fmMap.setZoom(defaultZoom);
